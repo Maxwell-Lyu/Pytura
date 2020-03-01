@@ -44,7 +44,7 @@ def draw_line(p_list, algorithm):
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (x1 - x0) / (y1 - y0)
             for y in range(y0, y1 + 1):
-                result.append((int(y0 + k * (y - y0)), y))
+                result.append((int(x0 + k * (y - y0)), y))
         pass
     elif algorithm == 'Bresenham':
         x = x0
