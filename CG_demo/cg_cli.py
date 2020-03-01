@@ -53,6 +53,37 @@ if __name__ == '__main__':
                 y1 = int(line[5])
                 algorithm = line[6]
                 item_dict[item_id] = ['line', [[x0, y0], [x1, y1]], algorithm, np.array(pen_color)]
+            elif line[0] == 'drawPolygon':
+                item_id = line[1]
+                p_list = []
+                for i in range(2, len(line) - 1, 2):
+                    p_list.append([int(line[i]), int(line[i+1])])
+                algorithm = line[len(line) - 1]
+                item_dict[item_id] = ['polygon', p_list, algorithm, np.array(pen_color)]
+            elif line[0] == 'drawEllipse':
+                item_id = line[1]
+                x0 = int(line[2])
+                y0 = int(line[3])
+                x1 = int(line[4])
+                y1 = int(line[5])
+                item_dict[item_id] = ['ellipse', [[x0, y0], [x1, y1]], None, np.array(pen_color)]
+            elif line[0] == 'translate':
+                item_id = line[1]
+                dx = int(line[2])
+                dy = int(line[3])
+                item_dict[item_id][1] = alg.translate(item_dict[item_id][1], dx, dy) 
+            elif line[0] == 'rotate':
+                item_id = line[1]
+                x = int(line[2])
+                y = int(line[3])
+                r = int(line[4])
+                item_dict[item_id][1] = alg.rotate(item_dict[item_id][1], x, y, r) 
+            elif line[0] == 'scale':
+                item_id = line[1]
+                x = int(line[2])
+                y = int(line[3])
+                s = int(line[4])
+                item_dict[item_id][1] = alg.scale(item_dict[item_id][1], x, y, s) 
             ...
 
             line = fp.readline()
