@@ -35,8 +35,14 @@ if __name__ == '__main__':
                         for x, y in pixels:
                             canvas[y, x] = color
                     elif item_type == 'polygon':
+                        pixels = alg.draw_polygon(p_list, algorithm)
+                        for x, y in pixels:
+                            canvas[y, x] = color
                         pass
                     elif item_type == 'ellipse':
+                        pixels = alg.draw_ellipse(p_list)
+                        for x, y in pixels:
+                            canvas[y, x] = color
                         pass
                     elif item_type == 'curve':
                         pass
