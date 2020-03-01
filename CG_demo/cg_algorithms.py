@@ -4,6 +4,12 @@
 # 本文件只允许依赖math库
 import math
 
+def sign(num):
+    if num > 0:
+        return 1
+    if num < 0:
+        return -1
+    return 0
 
 def draw_line(p_list, algorithm):
     """绘制线段
@@ -89,6 +95,73 @@ def draw_ellipse(p_list):
     :param p_list: (list of list of int: [[x0, y0], [x1, y1]]) 椭圆的矩形包围框左上角和右下角顶点坐标
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 绘制结果的像素点坐标列表
     """
+    x0, y0 = p_list[0]
+    x1, y1 = p_list[1]
+    x0, y0, x1, y1 = min(x0,x1), min(y0,y1), max(x0,x1), max(y0,y1)
+    a = abs(x1 - x0) / 2
+    b = abs(y1 - y0) / 2
+    center = [int((x0 + x1)/2), int((y0 + y1)/2)]
+
+    result = []
+    # x = int(a + 1/2)
+    # y = 0
+    # while b*b*(x-1/2) > a * a * (y+1):
+    #     result.append((x, y))
+    #     d1 = b*b*(2*x*x-2*x+1/2) + a*a*(2*y*y+4*y+2)-2*a*a*b*b
+    #     if d1 < 0:
+    #         y += 1
+    #     else:
+    #         x -= 1
+    #         y += 1
+    # d2 = b*b*(2*x*x-4*x+2)+a*a*(2*y*y+2*y+1/2)-2*a*a*b*b
+    # while x>=0:
+    #     result.append((x, y))
+    #     if d2 < 0:
+    #         x -= 1
+    #         y+=1
+    #     else:
+    #         x-=1
+    #     d2 = b*b*(2*x*x-4*x+2)+a*a*(2*y*y+2*y+1/2)-2*a*a*b*b
+        
+    x = int(a + 1/2)
+    y = int(0)
+    taa = a * a
+    t2aa = 2 * taa
+    t4aa = 2 * t2aa
+    tbb = b * b
+    t2bb = 2 * tbb
+    t4bb = 2 * t2bb
+    t2abb = a * t2bb
+    t2bbx = t2bb * x
+    tx = x
+
+    d1 = t2bbx *  (x-1) + tbb/2 + t2aa * (1-tbb)
+    while t2bb * tx > t2aa * y:
+        result.append((x, y))
+        if d1 < 0:
+            y = y + 1
+            d1 = d1 + t4aa * y + t2aa
+            tx = x - 1
+        else:
+            x =  x - 1
+            y =  y + 1
+            d1 = d1 - t4bb * x + t4aa * y + t2aa
+            tx = x
+    
+    d2 = t2bb * (x*x +1) - t4bb*x+t2aa*(y*y+y-tbb) + taa/2
+    while x>=0:
+        result.append((x, y))
+        if d2 < 0:
+            x = x - 1
+            y = y + 1
+            d2 = d2 + t4aa * y - t4bb*x + t2bb
+        else:
+            x =  x - 1
+            d2 = d2 - t4bb * x + t2bb
+    result += list(map(lambda x :(x[0],-x[1]), result))
+    result += list(map(lambda x :(-x[0],x[1]), result))
+    result = list(map(lambda x: (x[0] + center[0], x[1] + center[1]), result))
+    return result
     pass
 
 
