@@ -25,9 +25,46 @@ def draw_line(p_list, algorithm):
             k = (y1 - y0) / (x1 - x0)
             for x in range(x0, x1 + 1):
                 result.append((x, int(y0 + k * (x - x0))))
+        pass
     elif algorithm == 'DDA':
+        if abs(y1 - y0) <= abs(x1 - x0):
+            if x0 > x1:
+                x0, y0, x1, y1 = x1, y1, x0, y0
+            k = (y1 - y0) / (x1 - x0)
+            for x in range(x0, x1 + 1):
+                result.append((x, int(y0 + k * (x - x0))))
+        else:
+            if y0 > y1:
+                x0, y0, x1, y1 = x1, y1, x0, y0
+            k = (x1 - x0) / (y1 - y0)
+            for y in range(y0, y1 + 1):
+                result.append((int(y0 + k * (y - y0)), y))
         pass
     elif algorithm == 'Bresenham':
+        x = x0
+        y = y0
+        dx = abs(x1 - x0)
+        dy = abs(y1 - y0)
+        s1 = sign(x1 - x0)
+        s2 = sign(y1 - y0)
+        interchange = (dy > dx)
+        if interchange:
+            dx, dy = dy, dx
+        e = 2 * dy - dx
+        for i in range(1, dx + 1):
+            result.append((x, y))
+            while(e > 0):
+                if interchange:
+                    x += s1
+                else:
+                    y += s2
+                e = e - 2 * dx
+            if interchange:
+                y = y + s2
+            else:
+                x = x + s1
+            e = e + 2 * dy
+        result.append((x1, y1))
         pass
     return result
 
