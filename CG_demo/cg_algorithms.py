@@ -144,13 +144,32 @@ def draw_ellipse(p_list):
     return result
 
 
-def draw_curve(p_list, algorithm):
+def addPoint(p1, p2, u): 
+    return ((1 - u) * p1[0] + u * p2[0], (1 - u) * p1[1] + u * p2[1])
+
+def bezier(p_list, r, i, u):
+    if r == 0:
+        return p_list[i]
+    else:
+        return addPoint(bezier(p_list, r - 1, i, u), bezier(p_list, r - 1, i + 1, u), u)
+    pass
+
+def draw_curve(p_list: list, algorithm):
     """绘制曲线
 
     :param p_list: (list of list of int: [[x0, y0], [x1, y1], [x2, y2], ...]) 曲线的控制点坐标列表
     :param algorithm: (string) 绘制使用的算法，包括'Bezier'和'B-spline'（三次均匀B样条曲线，曲线不必经过首末控制点）
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 绘制结果的像素点坐标列表
     """
+    if algorithm == 'Bezier':
+        nPoints = 3000
+        n = p_list.__len__() - 1
+        result = [p_list[0]]
+        for i in range(1, nPoints):
+            result.append(bezier(p_list, n, 0, float(i) / (nPoints - 1)))
+        return list(map(lambda p: (round(p[0]), round(p[1])), result))
+    elif algorithm == 'B-spline':
+        pass
     pass
 
 
@@ -298,4 +317,3 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
                         return [(round(x1), round(y1)), (round(x2), round(y2))]
         pass
     return []
-    pass
