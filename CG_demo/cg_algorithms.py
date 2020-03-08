@@ -30,7 +30,7 @@ def draw_line(p_list, algorithm):
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (y1 - y0) / (x1 - x0)
             for x in range(x0, x1 + 1):
-                result.append((x, int(y0 + k * (x - x0))))
+                result.append((x, round(y0 + k * (x - x0))))
         pass
     elif algorithm == 'DDA':
         if abs(y1 - y0) <= abs(x1 - x0):
@@ -38,13 +38,13 @@ def draw_line(p_list, algorithm):
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (y1 - y0) / (x1 - x0)
             for x in range(x0, x1 + 1):
-                result.append((x, int(y0 + k * (x - x0))))
+                result.append((x, round(y0 + k * (x - x0))))
         else:
             if y0 > y1:
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (x1 - x0) / (y1 - y0)
             for y in range(y0, y1 + 1):
-                result.append((int(x0 + k * (y - y0)), y))
+                result.append((round(x0 + k * (y - y0)), y))
         pass
     elif algorithm == 'Bresenham':
         x = x0
@@ -100,31 +100,11 @@ def draw_ellipse(p_list):
     x0, y0, x1, y1 = min(x0,x1), min(y0,y1), max(x0,x1), max(y0,y1)
     a = abs(x1 - x0) / 2
     b = abs(y1 - y0) / 2
-    center = [int((x0 + x1)/2), int((y0 + y1)/2)]
+    center = [round((x0 + x1)/2), round((y0 + y1)/2)]
 
     result = []
-    # x = int(a + 1/2)
-    # y = 0
-    # while b*b*(x-1/2) > a * a * (y+1):
-    #     result.append((x, y))
-    #     d1 = b*b*(2*x*x-2*x+1/2) + a*a*(2*y*y+4*y+2)-2*a*a*b*b
-    #     if d1 < 0:
-    #         y += 1
-    #     else:
-    #         x -= 1
-    #         y += 1
-    # d2 = b*b*(2*x*x-4*x+2)+a*a*(2*y*y+2*y+1/2)-2*a*a*b*b
-    # while x>=0:
-    #     result.append((x, y))
-    #     if d2 < 0:
-    #         x -= 1
-    #         y+=1
-    #     else:
-    #         x-=1
-    #     d2 = b*b*(2*x*x-4*x+2)+a*a*(2*y*y+2*y+1/2)-2*a*a*b*b
-        
-    x = int(a + 1/2)
-    y = int(0)
+    x = round(a)
+    y = round(0)
     taa = a * a
     t2aa = 2 * taa
     t4aa = 2 * t2aa
@@ -162,7 +142,6 @@ def draw_ellipse(p_list):
     result += list(map(lambda x :(-x[0],x[1]), result))
     result = list(map(lambda x: (x[0] + center[0], x[1] + center[1]), result))
     return result
-    pass
 
 
 def draw_curve(p_list, algorithm):
@@ -198,7 +177,6 @@ def rotate(p_list, x, y, r):
     rad = r / math.pi / 2
     sin, cos = math.sin(rad), math.cos(rad)
     return list(map(lambda p: (round(x + (p[0] - x)*cos -(p[1]-y)*sin), round(y + (p[0] - x)*sin +(p[1]-y)*cos)), p_list))
-    pass
 
 
 def scale(p_list, x, y, s):
@@ -211,8 +189,49 @@ def scale(p_list, x, y, s):
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 变换后的图元参数
     """
     return list(map(lambda p: (round(p[0] * s + x * (1 - s)), round(p[1] * s + y * (1 - s))), p_list))
-    pass
 
+def getPCode(x, y, window):
+    pCodeList = []
+    pCodeList.append(x < window[0])
+    pCodeList.append(x > window[1])
+    pCodeList.append(y < window[2])
+    pCodeList.append(y > window[3])
+    p = 0;
+    for i in pCodeList:
+        p = (p << 1) | i
+    return p
+def getJoint(x1, y1, x2, y2, x = None, y = None):
+    if x != None:
+        if x1 == x2: 
+            return None
+        else:
+            return x, y1 + (x - x1)/(x2 - x1)*(y2 - y1)
+    if y != None:
+        if y1 == y2:
+            return None
+        else:
+            return x1 + (y - y1)/(y2 - y1)*(x2 - x1), y
+    return None
+def getFlag(pCode1, pCode2):
+    return ((pCode1 == 0) & (pCode2 == 0)) + (pCode1 & pCode2 == 0)
+
+def clipt(d, q, t_list): 
+    visible = True
+    if d == 0 and q < 0:
+        visible = False
+    elif d < 0:
+        t = float(q) / d
+        if t > t_list[1]:
+            visible = False
+        elif t > t_list[0]:
+            t_list[0] = t
+    elif d > 0:
+        t = float(q) / d
+        if t < t_list[0]:
+            visible = False
+        elif t < t_list[1]:
+            t_list[1] = t
+    return visible
 
 def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
     """线段裁剪
@@ -225,4 +244,58 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
     :param algorithm: (string) 使用的裁剪算法，包括'Cohen-Sutherland'和'Liang-Barsky'
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1]]) 裁剪后线段的起点和终点坐标
     """
+    x1, y1 = p_list[0]
+    x2, y2 = p_list[1]
+    if algorithm == 'Cohen-Sutherland':
+        window = (x_min, x_max, y_min, y_max)
+        pCode1 = getPCode(x1, y1, window)
+        pCode2 = getPCode(x2, y2, window)
+        vFlag = getFlag(pCode1, pCode2)
+        if vFlag == 2: 
+            return [(x1, y1), (x2, y2)]
+        elif vFlag == 1:
+            iFlag = 1
+            if x1 == x2:
+                iFlag = -1
+            elif y1 == y2:
+                iFlag = 0
+            while(vFlag == 1):
+                for i in range(1,5):
+                    if (pCode1 >> (4 - i)) != (pCode2 >> (4 - i)):
+                        if (pCode1 >> (4 - i)) == 0:
+                            x1, y1, x2, y2 = x2, y2, x1, y1
+                            pCode1, pCode2 = pCode2, pCode1
+                        if iFlag != -1 and i <= 2:
+                            y1 = (y2 - y1) / (x2 - x1) * (window[i - 1] - x1) + y1
+                            x1 = window[i - 1]
+                            pCode1 = getPCode(x1, y1, window)
+                        if iFlag != 0 and i > 2:
+                            if iFlag != -1:
+                                x1 = (x2 - x1) / (y2 - y1) * (window[i - 1] - y1) + x1
+                            y1 = window[i - 1]
+                            pCode1 = getPCode(x1, y1, window)
+                        vFlag = getFlag(pCode1, pCode2)
+                        if vFlag == 2:             
+                            return [(round(x1), round(y1)), (round(x2), round(y2))]
+                        elif vFlag == 0: 
+                            return []
+        else:
+            return []
+    elif algorithm == 'Liang-Barsky':
+        t = [float(0), float(1)]
+        deltax = float(x2 - x1)
+        if clipt(-deltax, x1 - x_min, t):
+            if clipt(deltax, x_max - x1, t):
+                deltay = float(y2 - y1)
+                if clipt(-deltay, y1 - y_min, t):
+                    if clipt(deltay, y_max - y1, t):
+                        if t[1] < 1:
+                            x2 = x1 + t[1] * deltax
+                            y2 = y1 + t[1] * deltay
+                        if t[0] > 0:
+                            x1 = x1 + t[0] * deltax
+                            y1 = y1 + t[0] * deltay
+                        return [(round(x1), round(y1)), (round(x2), round(y2))]
+        pass
+    return []
     pass
