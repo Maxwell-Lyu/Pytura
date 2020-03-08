@@ -142,10 +142,15 @@ class MainWindow(QMainWindow):
     """
     主窗口类
     """
+    styleSheet = """
+QListWidget{
+//  background: red;
+}
+    """
     def __init__(self):
         super().__init__()
+        self.setStyleSheet(self.styleSheet)
         self.item_cnt = 0
-
         # 使用QListWidget来记录已有的图元，并用于选择图元。注：这是图元选择的简单实现方法，更好的实现是在画布中直接用鼠标选择图元
         self.list_widget = QListWidget(self)
         self.list_widget.setMinimumWidth(200)
