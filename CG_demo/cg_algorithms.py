@@ -97,7 +97,6 @@ def draw_ellipse(p_list):
     """
     x0, y0 = p_list[0]
     x1, y1 = p_list[1]
-    x0, y0, x1, y1 = min(x0,x1), min(y0,y1), max(x0,x1), max(y0,y1)
     a = abs(x1 - x0) / 2
     b = abs(y1 - y0) / 2
     center = [round((x0 + x1)/2), round((y0 + y1)/2)]
@@ -154,6 +153,23 @@ def bezier(p_list, r, i, u):
         return addPoint(bezier(p_list, r - 1, i, u), bezier(p_list, r - 1, i + 1, u), u)
     pass
 
+def bSpline(p, t):
+    n = p.__len__() - 1
+    m = 3 + n + 1
+    step = 1 / (m - 2 * 3)
+    u = [0, 0, 0] + [_u * step for _u in range(0, m - 2 * 3 + 1)] + [1, 1, 1]
+    for i in range(3, m - 3):
+        if u[i] <= t and t < u[i + 1]:
+            break
+    _t = (t - u[i]) / (u[i + 1] - u[i])
+    A1 = (1 - _t) * (1 - _t) * (1 - _t) / 6.0
+    A2 = (3 * _t * _t * _t - 6 * _t * _t + 4) / 6.0
+    A3 = (-3 * _t * _t * _t + 3 * _t * _t + 3 * _t + 1) / 6.0
+    A4 = _t * _t * _t / 6.0
+    return (A1 * p[i-3][0] + A2 * p[i-2][0] + A3 * p[i-1][0] + A4 * p[i][0],
+            A1 * p[i-3][1] + A2 * p[i-2][1] + A3 * p[i-1][1] + A4 * p[i][1])
+
+
 def draw_curve(p_list: list, algorithm):
     """绘制曲线
 
@@ -162,13 +178,19 @@ def draw_curve(p_list: list, algorithm):
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 绘制结果的像素点坐标列表
     """
     if algorithm == 'Bezier':
-        nPoints = 3000
+        nPoints = 1000
         n = p_list.__len__() - 1
         result = [p_list[0]]
         for i in range(1, nPoints):
             result.append(bezier(p_list, n, 0, float(i) / (nPoints - 1)))
         return list(map(lambda p: (round(p[0]), round(p[1])), result))
     elif algorithm == 'B-spline':
+        result = []
+        nPoints = 1000
+        for i in range(0, nPoints):
+            t = i / nPoints
+            result.append(bSpline(p_list, t))
+        return list(map(lambda p: (round(p[0]), round(p[1])), result))
         pass
     pass
 

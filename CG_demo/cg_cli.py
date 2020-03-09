@@ -77,6 +77,7 @@ if __name__ == '__main__':
                 y0 = int(line[3])
                 x1 = int(line[4])
                 y1 = int(line[5])
+                x0, y0, x1, y1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
                 item_dict[item_id] = ['ellipse', [[x0, y0], [x1, y1]], None, np.array(pen_color)]
             elif line[0] == 'drawCurve':
                 item_id = line[1]
@@ -108,6 +109,7 @@ if __name__ == '__main__':
                 y0 = int(line[3])
                 x1 = int(line[4])
                 y1 = int(line[5])
+                x0, y0, x1, x1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
                 algorithm = line[6]
                 p_list = alg.clip(p_list, x0, y0, x1, y1, algorithm)
                 if p_list.__len__() > 0:
