@@ -84,6 +84,8 @@ def draw_polygon(p_list, algorithm):
     :param algorithm: (string) 绘制使用的算法，包括'DDA'和'Bresenham'
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 绘制结果的像素点坐标列表
     """
+    if len(p_list) == 2:
+        return draw_line([p_list[0], p_list[1]], algorithm)
     result = []
     for i in range(len(p_list)):
         line = draw_line([p_list[i - 1], p_list[i]], algorithm)
