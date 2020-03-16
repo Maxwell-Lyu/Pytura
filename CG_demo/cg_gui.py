@@ -100,6 +100,11 @@ class MyCanvas(QGraphicsView):
                 self.finish_draw()
         super().mouseReleaseEvent(event)
 
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
+        if self.status == 'polygon' and len(self.temp_item.p_list) >= 2:
+            self.finish_draw()
+        super().mouseDoubleClickEvent(event)
+        
     """
     def mousePressEvent(self, event: QMouseEvent) -> None:
         pos = self.mapToScene(event.localPos().toPoint())
