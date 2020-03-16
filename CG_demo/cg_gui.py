@@ -25,6 +25,7 @@ class MyCanvas(QGraphicsView):
     """
     def __init__(self, *args):
         super().__init__(*args)
+        self.setMouseTracking(True)
         self.main_window = None
         self.list_widget = None
         self.item_dict = {}
@@ -91,7 +92,7 @@ class MyCanvas(QGraphicsView):
                 if len(self.temp_item.p_list) == 2:
                     self.finish_draw()
         super().mouseReleaseEvent(event)
-        
+
     """
     def mousePressEvent(self, event: QMouseEvent) -> None:
         pos = self.mapToScene(event.localPos().toPoint())
@@ -227,6 +228,8 @@ QListWidget{
         # 连接信号和槽函数
         exit_act.triggered.connect(qApp.quit)
         line_naive_act.triggered.connect(self.line_naive_action)
+        line_dda_act.triggered.connect(self.line_dda_action)
+        line_bresenham_act.triggered.connect(self.line_bresenham_action)
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
 
         # 设置主窗口的布局
@@ -245,12 +248,22 @@ QListWidget{
         self.item_cnt += 1
         return _id
 
+    # Description: line actions
     def line_naive_action(self):
-        self.canvas_widget.start_draw_line('Naive', self.get_id())
+        self.canvas_widget.start_draw('line','Naive', self.get_id())
         self.statusBar().showMessage('Naive算法绘制线段')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
-
+    def line_dda_action(self):
+        self.canvas_widget.start_draw('line','DDA', self.get_id())
+        self.statusBar().showMessage('DDA算法绘制线段')
+        self.list_widget.clearSelection()
+        self.canvas_widget.clear_selection()
+    def line_bresenham_action(self):
+        self.canvas_widget.start_draw('line','Bresenham', self.get_id())
+        self.statusBar().showMessage('Bresenham算法绘制线段')
+        self.list_widget.clearSelection()
+        self.canvas_widget.clear_selection()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
