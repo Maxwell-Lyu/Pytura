@@ -163,6 +163,12 @@ class MyItem(QGraphicsItem):
                 painter.setPen(QColor(255, 0, 0))
                 painter.drawRect(self.boundingRect())
         elif self.item_type == 'polygon':
+            item_pixels = alg.draw_polygon(self.p_list, self.algorithm)
+            for p in item_pixels:
+                painter.drawPoint(*p)
+            if self.selected:
+                painter.setPen(QColor(255, 0, 0))
+                painter.drawRect(self.boundingRect())
             pass
         elif self.item_type == 'ellipse':
             pass
@@ -179,6 +185,11 @@ class MyItem(QGraphicsItem):
             h = max(y0, y1) - y
             return QRectF(x - 1, y - 1, w + 2, h + 2)
         elif self.item_type == 'polygon':
+            x = min(list(map(lambda p: p[0], self.p_list)))
+            y = min(list(map(lambda p: p[1], self.p_list)))
+            w = max(list(map(lambda p: p[0], self.p_list))) - x
+            h = max(list(map(lambda p: p[1], self.p_list))) - y
+            return QRectF(x - 1, y - 1, w + 2, h + 2)
             pass
         elif self.item_type == 'ellipse':
             pass
@@ -239,9 +250,14 @@ QListWidget{
 
         # 连接信号和槽函数
         exit_act.triggered.connect(qApp.quit)
+        # Description: line actions
         line_naive_act.triggered.connect(self.line_naive_action)
         line_dda_act.triggered.connect(self.line_dda_action)
         line_bresenham_act.triggered.connect(self.line_bresenham_action)
+        # Description: polygon acitons
+        polygon_dda_act.triggered.connect(self.polygon_dda_action)
+        polygon_bresenham_act.triggered.connect(self.polygon_bresenham_action)
+
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
 
         # 设置主窗口的布局
@@ -266,16 +282,33 @@ QListWidget{
         self.statusBar().showMessage('Naive算法绘制线段')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
+
     def line_dda_action(self):
         self.canvas_widget.start_draw('line','DDA', self.get_id())
         self.statusBar().showMessage('DDA算法绘制线段')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
+
     def line_bresenham_action(self):
         self.canvas_widget.start_draw('line','Bresenham', self.get_id())
         self.statusBar().showMessage('Bresenham算法绘制线段')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
+
+    # Description: polygon acitons
+    def polygon_dda_action(self):
+        self.canvas_widget.start_draw('polygon','DDA', self.get_id())
+        self.statusBar().showMessage('DDA算法绘制多边形')
+        self.list_widget.clearSelection()
+        self.canvas_widget.clear_selection()
+
+    def polygon_bresenham_action(self):
+        self.canvas_widget.start_draw('polygon','Bresenham', self.get_id())
+        self.statusBar().showMessage('Bresenham算法绘制多边形')
+        self.list_widget.clearSelection()
+        self.canvas_widget.clear_selection()
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
