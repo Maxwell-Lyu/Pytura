@@ -90,12 +90,11 @@ class MyCanvas(QGraphicsView):
             self.scene().addItem(self.temp_item)
             self.updateScene([self.sceneRect()])
         else: 
-            if self.status == 'line':
-                self.temp_item.p_list[self.temp_last_point] = [x, y]
-                self.temp_last_point += 1
-                self.updateScene([self.sceneRect()])
-                if len(self.temp_item.p_list) == 2:
-                    self.finish_draw()
+            self.temp_item.p_list[self.temp_last_point] = [x, y]
+            self.temp_last_point += 1
+            self.updateScene([self.sceneRect()])
+            if self.status == 'line' and len(self.temp_item.p_list) == 2:
+                self.finish_draw()
         super().mouseReleaseEvent(event)
 
     """
