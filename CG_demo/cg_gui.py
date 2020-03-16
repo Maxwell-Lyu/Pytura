@@ -73,8 +73,11 @@ class MyCanvas(QGraphicsView):
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
-        if self.status == 'line' and self.temp_last_point:
-            self.temp_item.p_list[self.temp_last_point] = [x, y]
+        if self.temp_last_point:
+            if self.temp_last_point == len(self.temp_item.p_list):
+                self.temp_item.p_list.append([x, y])
+            else:
+                self.temp_item.p_list[self.temp_last_point] = [x, y]
         self.updateScene([self.sceneRect()])
         super().mouseMoveEvent(event)
 
