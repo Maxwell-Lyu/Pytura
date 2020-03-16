@@ -33,7 +33,9 @@ def draw_line(p_list, algorithm):
                 result.append((x, round(y0 + k * (x - x0))))
         pass
     elif algorithm == 'DDA':
-        if abs(y1 - y0) <= abs(x1 - x0):
+        if x0 == x1:
+            result.append((x0, y0))
+        elif abs(y1 - y0) <= abs(x1 - x0):
             if x0 > x1:
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (y1 - y0) / (x1 - x0)
