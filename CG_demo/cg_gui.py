@@ -34,13 +34,19 @@ class MyCanvas(QGraphicsView):
         self.temp_algorithm = ''
         self.temp_id = ''
         self.temp_item = None
+        self.temp_last_point = 0
 
-    def start_draw_line(self, algorithm, item_id):
-        self.status = 'line'
+    def start_draw(self, status, algorithm, item_id):
+        self.status = status
         self.temp_algorithm = algorithm
         self.temp_id = item_id
+        self.temp_last_point = 0
+
 
     def finish_draw(self):
+        self.temp_last_point = 0
+        self.item_dict[self.temp_id] = self.temp_item
+        self.list_widget.addItem(self.temp_id)
         self.temp_id = self.main_window.get_id()
 
     def clear_selection(self):
@@ -59,6 +65,34 @@ class MyCanvas(QGraphicsView):
         self.status = ''
         self.updateScene([self.sceneRect()])
 
+    def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        pos = self.mapToScene(event.localPos().toPoint())
+        x = int(pos.x())
+        y = int(pos.y())
+        if self.status == 'line' and self.temp_last_point:
+            self.temp_item.p_list[self.temp_last_point] = [x, y]
+        self.updateScene([self.sceneRect()])
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        pos = self.mapToScene(event.localPos().toPoint())
+        x = int(pos.x())
+        y = int(pos.y())
+        if self.temp_last_point == 0:
+            self.temp_last_point += 1;
+            self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm)
+            self.scene().addItem(self.temp_item)
+            self.updateScene([self.sceneRect()])
+        else: 
+            if self.status == 'line':
+                self.temp_item.p_list[self.temp_last_point] = [x, y]
+                self.temp_last_point += 1
+                self.updateScene([self.sceneRect()])
+                if len(self.temp_item.p_list) == 2:
+                    self.finish_draw()
+        super().mouseReleaseEvent(event)
+        
+    """
     def mousePressEvent(self, event: QMouseEvent) -> None:
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
@@ -84,6 +118,7 @@ class MyCanvas(QGraphicsView):
             self.list_widget.addItem(self.temp_id)
             self.finish_draw()
         super().mouseReleaseEvent(event)
+    """
 
 
 class MyItem(QGraphicsItem):
