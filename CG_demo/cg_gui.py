@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 
 import sys
+import math
 import cg_algorithms as alg
 from typing import Optional
 from PyQt5.QtWidgets import (
@@ -37,19 +38,39 @@ class MyCanvas(QGraphicsView):
         self.temp_item = None
         self.temp_last_point = 0
 
+        self.edit_data = []
+        self.edit_p_list = []
+
     def start_draw(self, status, algorithm, item_id):
         self.status = status
         self.temp_algorithm = algorithm
         self.temp_id = item_id
         self.temp_last_point = 0
 
+    def start_edit(self, status, algorithm):
+        if self.selected_id:
+            self.status = status
+            self.temp_algorithm = algorithm
+            self.temp_id = self.selected_id
+            self.temp_item.isTemp = True
+            self.edit_p_list = self.item_dict[self.temp_id].p_list
 
     def finish_draw(self):
         self.status = ''
         self.temp_last_point = 0
         self.item_dict[self.temp_id] = self.temp_item
         self.list_widget.addItem(self.temp_id)
+        self.temp_item.isDirty = True
         self.temp_item.isTemp = False
+        self.temp_id = ''
+        self.updateScene([self.sceneRect()])
+
+    def finish_edit(self):
+        self.status = ''
+        self.temp_id = ''
+        self.temp_item.isTemp = False
+        self.temp_item.isDirty = True
+        self.edit_data = []
         self.updateScene([self.sceneRect()])
 
     def clear_selection(self):
@@ -74,7 +95,34 @@ class MyCanvas(QGraphicsView):
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
-        if self.temp_last_point:
+        if self.status == 'translate' and len(self.edit_data):
+            self.edit_data[1] = [x, y]
+            dx = self.edit_data[1][0] - self.edit_data[0][0]
+            dy = self.edit_data[1][1] - self.edit_data[0][1]
+            new_p_list = alg.translate(self.edit_p_list, dx, dy)
+            self.item_dict[self.selected_id].p_list = new_p_list
+            self.item_dict[self.selected_id].isDirty = True
+            pass
+        elif self.status == 'rotate' and len(self.edit_data):
+            self.edit_data[1] = [x, y]
+            dx = self.edit_data[1][0] - self.edit_data[0][0]
+            dy = self.edit_data[1][1] - self.edit_data[0][1]
+            if dx:
+                new_p_list = alg.rotate(self.edit_p_list, self.edit_data[0][0], self.edit_data[0][1], math.degrees(math.atan2(dy, dx)))
+                self.item_dict[self.selected_id].p_list = new_p_list
+                self.item_dict[self.selected_id].isDirty = True
+            pass
+        elif self.status == 'scale' and len(self.edit_data):
+            self.edit_data[1] = [x, y]
+            dx = self.edit_data[1][0] - self.edit_data[0][0]
+            dy = self.edit_data[1][1] - self.edit_data[0][1]
+            new_p_list = alg.scale(self.edit_p_list, self.edit_data[0][0] + 100, self.edit_data[0][1] + 100, max(dx, dy) / 100)
+            self.item_dict[self.selected_id].p_list = new_p_list
+            self.item_dict[self.selected_id].isDirty = True
+            pass
+        elif self.status == 'clip':
+            pass
+        elif self.temp_last_point:
             if self.temp_last_point == len(self.temp_item.p_list):
                 self.temp_item.p_list.append([x, y])
             else:
@@ -89,7 +137,13 @@ class MyCanvas(QGraphicsView):
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
-        if self.temp_last_point == 0:
+        if self.status == 'translate' or self.status == 'rotate':
+            self.edit_data = [[x, y], [x, y]]
+        elif self.status == 'scale':
+            self.edit_data = [[x - 100, y - 100], [x, y]]
+        elif self.status == 'clip':
+            pass
+        elif self.temp_last_point == 0:
             self.temp_last_point += 1
             self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm)
             self.temp_item.isDirty = True
@@ -106,11 +160,15 @@ class MyCanvas(QGraphicsView):
                 self.finish_draw()
         super().mouseReleaseEvent(event)
 
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        if self.status == 'translate' or self.status == 'rotate' or self.status == 'scale':
+            self.finish_edit()
+        super().mouseReleaseEvent(event)
+
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         if self.status == 'polygon' and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
         elif self.status == 'curve' and len(self.temp_item.p_list) >= 2:
-            self.temp_item.isDirty = True
             self.finish_draw()
         super().mouseDoubleClickEvent(event)
         
@@ -268,6 +326,10 @@ QListWidget{
         # Description: curve actions
         curve_bezier_act.triggered.connect(self.curve_bezier_aciion)
         curve_b_spline_act.triggered.connect(self.curve_b_spline_action)
+        # Description: edit actions
+        translate_act.triggered.connect(self.translate_action)
+        rotate_act.triggered.connect(self.rotate_action)
+        scale_act.triggered.connect(self.scale_action)
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
 
         # 设置主窗口的布局
@@ -337,6 +399,19 @@ QListWidget{
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
+    # Description: edit actions
+    def translate_action(self):
+        self.canvas_widget.start_edit('translate','')
+        self.statusBar().showMessage('平移')
+        pass
+    def rotate_action(self):
+        self.canvas_widget.start_edit('rotate','')
+        self.statusBar().showMessage('旋转')
+        pass
+    def scale_action(self):
+        self.canvas_widget.start_edit('scale','')
+        self.statusBar().showMessage('缩放')
+        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
