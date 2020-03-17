@@ -50,10 +50,15 @@ class MyCanvas(QGraphicsView):
     def start_edit(self, status, algorithm):
         if self.selected_id:
             self.status = status
-            self.temp_algorithm = algorithm
             self.temp_id = self.selected_id
             self.temp_item.isTemp = True
             self.edit_p_list = self.item_dict[self.temp_id].p_list
+
+    def start_clip(self, status, algorithm):
+        if self.selected_id and self.item_dict[self.selected_id].item_type == 'line':
+            self.status = status
+            self.temp_algorithm = algorithm
+            self.temp_id = 'clip-rect'
 
     def finish_draw(self):
         self.status = ''
@@ -71,6 +76,18 @@ class MyCanvas(QGraphicsView):
         self.temp_item.isTemp = False
         self.temp_item.isDirty = True
         self.edit_data = []
+        self.updateScene([self.sceneRect()])
+
+    def finish_clip(self):
+        self.status = ''
+        self.temp_id = ''
+        self.edit_data = []
+        minPoint = min(self.temp_item.p_list)
+        maxPoint = max(self.temp_item.p_list)
+        new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
+        self.item_dict[self.selected_id].p_list = new_p_list
+        self.item_dict[self.selected_id].isDirty = True
+        self.scene().removeItem(self.temp_item)
         self.updateScene([self.sceneRect()])
 
     def clear_selection(self):
@@ -119,9 +136,10 @@ class MyCanvas(QGraphicsView):
             new_p_list = alg.scale(self.edit_p_list, self.edit_data[0][0] + 100, self.edit_data[0][1] + 100, max(dx, dy) / 100)
             self.item_dict[self.selected_id].p_list = new_p_list
             self.item_dict[self.selected_id].isDirty = True
-            pass
-        elif self.status == 'clip':
-            pass
+        elif self.status == 'clip' and len(self.temp_item.p_list) == 4:
+            self.temp_item.p_list[2] = [x, y]
+            self.temp_item.p_list = [self.temp_item.p_list[0], [self.temp_item.p_list[0][0], y], [x, y], [x, self.temp_item.p_list[0][1]]]
+            self.temp_item.isDirty = True
         elif self.temp_last_point:
             if self.temp_last_point == len(self.temp_item.p_list):
                 self.temp_item.p_list.append([x, y])
@@ -142,6 +160,9 @@ class MyCanvas(QGraphicsView):
         elif self.status == 'scale':
             self.edit_data = [[x - 100, y - 100], [x, y]]
         elif self.status == 'clip':
+            self.temp_item = MyItem(self.temp_id, 'polygon', [[x, y], [x, y], [x, y], [x, y]], 'DDA')
+            self.scene().addItem(self.temp_item)
+            self.updateScene([self.sceneRect()])
             pass
         elif self.temp_last_point == 0:
             self.temp_last_point += 1
@@ -163,6 +184,8 @@ class MyCanvas(QGraphicsView):
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         if self.status == 'translate' or self.status == 'rotate' or self.status == 'scale':
             self.finish_edit()
+        elif self.status == 'clip':
+            self.finish_clip()
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
@@ -330,6 +353,10 @@ QListWidget{
         translate_act.triggered.connect(self.translate_action)
         rotate_act.triggered.connect(self.rotate_action)
         scale_act.triggered.connect(self.scale_action)
+        # Description: clip actions
+        clip_cohen_sutherland_act.triggered.connect(self.clip_cohen_sutherland_action)
+        clip_liang_barsky_act.triggered.connect(self.clip_liang_barsky_action)
+
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
 
         # 设置主窗口的布局
@@ -411,6 +438,16 @@ QListWidget{
     def scale_action(self):
         self.canvas_widget.start_edit('scale','')
         self.statusBar().showMessage('缩放')
+        pass
+
+    # Description: clip actions
+    def clip_cohen_sutherland_action(self):
+        self.canvas_widget.start_clip('clip','Cohen-Sutherland')
+        self.statusBar().showMessage('Cohen-Sutherland算法裁剪线段')
+        pass
+    def clip_liang_barsky_action(self):
+        self.canvas_widget.start_clip('clip','Liang-Barsky')
+        self.statusBar().showMessage('Liang-Barsky算法裁剪线段')
         pass
 
 if __name__ == '__main__':
