@@ -50,6 +50,7 @@ class MyCanvas(QGraphicsView):
         self.item_dict[self.temp_id] = self.temp_item
         self.list_widget.addItem(self.temp_id)
         self.temp_id = self.main_window.get_id()
+        self.temp_item.isDirty = False
         self.temp_item.isTemp = False
 
     def clear_selection(self):
@@ -107,6 +108,8 @@ class MyCanvas(QGraphicsView):
         if self.status == 'polygon' and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
         elif self.status == 'curve' and len(self.temp_item.p_list) >= 2:
+            self.temp_item.isTemp = False
+            self.updateScene([self.sceneRect()])
             self.finish_draw()
         super().mouseDoubleClickEvent(event)
         
@@ -159,25 +162,26 @@ class MyItem(QGraphicsItem):
         self.algorithm = algorithm  # 绘制算法，'DDA'、'Bresenham'、'Bezier'、'B-spline'等
         self.item_pixels = []
         self.selected = False
+        self.isDirty = True
         self.isTemp = True
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
         if self.item_type == 'line':
-            if self.isTemp: self.item_pixels = alg.draw_line(self.p_list, self.algorithm)
+            if self.isDirty: self.item_pixels = alg.draw_line(self.p_list, self.algorithm)
             for p in self.item_pixels:
                 painter.drawPoint(*p)
             if self.selected:
                 painter.setPen(QColor(255, 0, 0))
                 painter.drawRect(self.boundingRect())
         elif self.item_type == 'polygon':
-            if self.isTemp: self.item_pixels = alg.draw_polygon(self.p_list, self.algorithm)
+            if self.isDirty: self.item_pixels = alg.draw_polygon(self.p_list, self.algorithm)
             for p in self.item_pixels:
                 painter.drawPoint(*p)
             if self.selected:
                 painter.setPen(QColor(255, 0, 0))
                 painter.drawRect(self.boundingRect())
         elif self.item_type == 'ellipse':
-            if self.isTemp: self.item_pixels = alg.draw_ellipse(self.p_list)
+            if self.isDirty: self.item_pixels = alg.draw_ellipse(self.p_list)
             for p in self.item_pixels:
                 painter.drawPoint(*p)
             if self.selected:
@@ -187,7 +191,7 @@ class MyItem(QGraphicsItem):
             if self.algorithm == 'B-spline' and len(self.p_list) < 4:
                 self.item_pixels = []
             else:
-                if self.isTemp: self.item_pixels = alg.draw_curve(self.p_list, self.algorithm, self.isTemp)
+                self.item_pixels = alg.draw_curve(self.p_list, self.algorithm, self.isTemp)
             for p in self.item_pixels:
                 painter.drawPoint(*p)
             if self.selected:
