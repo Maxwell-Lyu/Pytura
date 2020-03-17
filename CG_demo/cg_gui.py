@@ -260,7 +260,7 @@ QListWidget{
         line_naive_act.triggered.connect(self.line_naive_action)
         line_dda_act.triggered.connect(self.line_dda_action)
         line_bresenham_act.triggered.connect(self.line_bresenham_action)
-        # Description: polygon acitons
+        # Description: polygon actions
         polygon_dda_act.triggered.connect(self.polygon_dda_action)
         polygon_bresenham_act.triggered.connect(self.polygon_bresenham_action)
         # Description: ellipse actions
@@ -305,7 +305,7 @@ QListWidget{
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
-    # Description: polygon acitons
+    # Description: polygon actions
     def polygon_dda_action(self):
         self.canvas_widget.start_draw('polygon','DDA', self.get_id())
         self.statusBar().showMessage('DDA算法绘制多边形')
