@@ -188,13 +188,13 @@ def draw_curve(p_list: list, algorithm, isQuick = False):
         result = [p_list[0]]
         for i in range(1, nPoints):
             result.append(bezier(p_list, n, 0, float(i) / (nPoints - 1)))
-        return list(map(lambda p: (round(p[0]), round(p[1])), result))
+        return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))
     elif algorithm == 'B-spline':
         result = []
         for i in range(0, nPoints):
             t = i / nPoints
             result.append(bSpline(p_list, t))
-        return list(map(lambda p: (round(p[0]), round(p[1])), result))
+        return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))
         pass
     pass
 
