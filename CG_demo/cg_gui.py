@@ -98,6 +98,8 @@ class MyCanvas(QGraphicsView):
             self.updateScene([self.sceneRect()])
             if self.status == 'line' and len(self.temp_item.p_list) == 2:
                 self.finish_draw()
+            elif self.status == 'ellipse' and len(self.temp_item.p_list) == 2:
+                self.finish_draw()
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
@@ -169,9 +171,13 @@ class MyItem(QGraphicsItem):
             if self.selected:
                 painter.setPen(QColor(255, 0, 0))
                 painter.drawRect(self.boundingRect())
-            pass
         elif self.item_type == 'ellipse':
-            pass
+            item_pixels = alg.draw_ellipse(self.p_list)
+            for p in item_pixels:
+                painter.drawPoint(*p)
+            if self.selected:
+                painter.setPen(QColor(255, 0, 0))
+                painter.drawRect(self.boundingRect())
         elif self.item_type == 'curve':
             pass
 
@@ -190,9 +196,14 @@ class MyItem(QGraphicsItem):
             w = max(list(map(lambda p: p[0], self.p_list))) - x
             h = max(list(map(lambda p: p[1], self.p_list))) - y
             return QRectF(x - 1, y - 1, w + 2, h + 2)
-            pass
         elif self.item_type == 'ellipse':
-            pass
+            x0, y0 = self.p_list[0]
+            x1, y1 = self.p_list[1]
+            x = min(x0, x1)
+            y = min(y0, y1)
+            w = max(x0, x1) - x
+            h = max(y0, y1) - y
+            return QRectF(x - 1, y - 1, w + 2, h + 2)
         elif self.item_type == 'curve':
             pass
 
@@ -257,6 +268,8 @@ QListWidget{
         # Description: polygon acitons
         polygon_dda_act.triggered.connect(self.polygon_dda_action)
         polygon_bresenham_act.triggered.connect(self.polygon_bresenham_action)
+        # Description: ellipse actions
+        ellipse_act.triggered.connect(self.ellipse_action)
 
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
 
@@ -308,6 +321,12 @@ QListWidget{
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
+    # Description: ellipse actions
+    def ellipse_action(self):
+        self.canvas_widget.start_draw('ellipse','', self.get_id())
+        self.statusBar().showMessage('中点圆生成算法绘制椭圆')
+        self.list_widget.clearSelection()
+        self.canvas_widget.clear_selection()
 
 
 if __name__ == '__main__':
