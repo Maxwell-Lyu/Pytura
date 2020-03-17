@@ -50,6 +50,7 @@ class MyCanvas(QGraphicsView):
         self.item_dict[self.temp_id] = self.temp_item
         self.list_widget.addItem(self.temp_id)
         self.temp_id = self.main_window.get_id()
+        self.temp_item.isTemp = False
 
     def clear_selection(self):
         if self.selected_id != '':
@@ -156,26 +157,28 @@ class MyItem(QGraphicsItem):
         self.item_type = item_type  # 图元类型，'line'、'polygon'、'ellipse'、'curve'等
         self.p_list = p_list        # 图元参数
         self.algorithm = algorithm  # 绘制算法，'DDA'、'Bresenham'、'Bezier'、'B-spline'等
+        self.item_pixels = []
         self.selected = False
+        self.isTemp = True
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
         if self.item_type == 'line':
-            item_pixels = alg.draw_line(self.p_list, self.algorithm)
-            for p in item_pixels:
+            if self.isTemp: self.item_pixels = alg.draw_line(self.p_list, self.algorithm)
+            for p in self.item_pixels:
                 painter.drawPoint(*p)
             if self.selected:
                 painter.setPen(QColor(255, 0, 0))
                 painter.drawRect(self.boundingRect())
         elif self.item_type == 'polygon':
-            item_pixels = alg.draw_polygon(self.p_list, self.algorithm)
-            for p in item_pixels:
+            if self.isTemp: self.item_pixels = alg.draw_polygon(self.p_list, self.algorithm)
+            for p in self.item_pixels:
                 painter.drawPoint(*p)
             if self.selected:
                 painter.setPen(QColor(255, 0, 0))
                 painter.drawRect(self.boundingRect())
         elif self.item_type == 'ellipse':
-            item_pixels = alg.draw_ellipse(self.p_list)
-            for p in item_pixels:
+            if self.isTemp: self.item_pixels = alg.draw_ellipse(self.p_list)
+            for p in self.item_pixels:
                 painter.drawPoint(*p)
             if self.selected:
                 painter.setPen(QColor(255, 0, 0))
