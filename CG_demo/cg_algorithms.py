@@ -241,7 +241,7 @@ def getPCode(x, y, window):
     pCodeList.append(x > window[1])
     pCodeList.append(y < window[2])
     pCodeList.append(y > window[3])
-    p = 0;
+    p = 0
     for i in pCodeList:
         p = (p << 1) | i
     return p
