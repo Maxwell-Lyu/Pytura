@@ -174,15 +174,16 @@ def bSpline(p, t):
             A1 * p[i-3][1] + A2 * p[i-2][1] + A3 * p[i-1][1] + A4 * p[i][1])
 
 
-def draw_curve(p_list: list, algorithm):
+def draw_curve(p_list: list, algorithm, isQuick = False):
     """绘制曲线
 
     :param p_list: (list of list of int: [[x0, y0], [x1, y1], [x2, y2], ...]) 曲线的控制点坐标列表
     :param algorithm: (string) 绘制使用的算法，包括'Bezier'和'B-spline'（三次均匀B样条曲线，曲线不必经过首末控制点）
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 绘制结果的像素点坐标列表
     """
+    nPoints = 1000
+    if isQuick: nPoints = 100
     if algorithm == 'Bezier':
-        nPoints = 1000
         n = p_list.__len__() - 1
         result = [p_list[0]]
         for i in range(1, nPoints):
@@ -190,7 +191,6 @@ def draw_curve(p_list: list, algorithm):
         return list(map(lambda p: (round(p[0]), round(p[1])), result))
     elif algorithm == 'B-spline':
         result = []
-        nPoints = 1000
         for i in range(0, nPoints):
             t = i / nPoints
             result.append(bSpline(p_list, t))
