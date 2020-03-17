@@ -105,6 +105,8 @@ class MyCanvas(QGraphicsView):
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         if self.status == 'polygon' and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
+        elif self.status == 'curve' and len(self.temp_item.p_list) >= 2:
+            self.finish_draw()
         super().mouseDoubleClickEvent(event)
         
     """
@@ -179,7 +181,15 @@ class MyItem(QGraphicsItem):
                 painter.setPen(QColor(255, 0, 0))
                 painter.drawRect(self.boundingRect())
         elif self.item_type == 'curve':
-            pass
+            if self.algorithm == 'B-spline' and len(self.p_list) < 4:
+                self.item_pixels = []
+            else:
+                if self.isTemp: self.item_pixels = alg.draw_curve(self.p_list, self.algorithm, self.isTemp)
+            for p in self.item_pixels:
+                painter.drawPoint(*p)
+            if self.selected:
+                painter.setPen(QColor(255, 0, 0))
+                painter.drawRect(self.boundingRect())
 
     def boundingRect(self) -> QRectF:
         if self.item_type == 'line':
@@ -205,7 +215,11 @@ class MyItem(QGraphicsItem):
             h = max(y0, y1) - y
             return QRectF(x - 1, y - 1, w + 2, h + 2)
         elif self.item_type == 'curve':
-            pass
+            x = min(list(map(lambda p: p[0], self.p_list)))
+            y = min(list(map(lambda p: p[1], self.p_list)))
+            w = max(list(map(lambda p: p[0], self.p_list))) - x
+            h = max(list(map(lambda p: p[1], self.p_list))) - y
+            return QRectF(x - 1, y - 1, w + 2, h + 2)
 
 
 class MainWindow(QMainWindow):
@@ -270,7 +284,9 @@ QListWidget{
         polygon_bresenham_act.triggered.connect(self.polygon_bresenham_action)
         # Description: ellipse actions
         ellipse_act.triggered.connect(self.ellipse_action)
-
+        # Description: curve actions
+        curve_bezier_act.triggered.connect(self.curve_bezier_aciion)
+        curve_b_spline_act.triggered.connect(self.curve_b_spline_action)
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
 
         # 设置主窗口的布局
@@ -325,6 +341,18 @@ QListWidget{
     def ellipse_action(self):
         self.canvas_widget.start_draw('ellipse','', self.get_id())
         self.statusBar().showMessage('中点圆生成算法绘制椭圆')
+        self.list_widget.clearSelection()
+        self.canvas_widget.clear_selection()
+
+    # Description: curve actions
+    def curve_bezier_aciion(self):
+        self.canvas_widget.start_draw('curve','Bezier', self.get_id())
+        self.statusBar().showMessage('Bezier算法绘制曲线')
+        self.list_widget.clearSelection()
+        self.canvas_widget.clear_selection()
+    def curve_b_spline_action(self):
+        self.canvas_widget.start_draw('curve','B-spline', self.get_id())
+        self.statusBar().showMessage('B-spline算法绘制曲线')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
