@@ -88,7 +88,7 @@ class MyCanvas(QGraphicsView):
         x = int(pos.x())
         y = int(pos.y())
         if self.temp_last_point == 0:
-            self.temp_last_point += 1;
+            self.temp_last_point += 1
             self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm)
             self.scene().addItem(self.temp_item)
             self.updateScene([self.sceneRect()])
