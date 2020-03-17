@@ -23,29 +23,30 @@ def draw_line(p_list, algorithm):
     result = []
     if algorithm == 'Naive':
         if x0 == x1:
-            for y in range(y0, y1 + 1):
+            for y in range(min(y0, y1), max(y0, y1) + 1):
                 result.append((x0, y))
         else:
             if x0 > x1:
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (y1 - y0) / (x1 - x0)
-            for x in range(x0, x1 + 1):
+            for x in range(min(x0, x1), max(x0, x1) + 1):
                 result.append((x, round(y0 + k * (x - x0))))
         pass
     elif algorithm == 'DDA':
         if x0 == x1:
-            result.append((x0, y0))
+            for y in range(min(y0, y1), max(y0, y1) + 1):
+                result.append((x0, y))
         elif abs(y1 - y0) <= abs(x1 - x0):
             if x0 > x1:
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (y1 - y0) / (x1 - x0)
-            for x in range(x0, x1 + 1):
+            for x in range(min(x0, x1), max(x0, x1) + 1):
                 result.append((x, round(y0 + k * (x - x0))))
         else:
             if y0 > y1:
                 x0, y0, x1, y1 = x1, y1, x0, y0
             k = (x1 - x0) / (y1 - y0)
-            for y in range(y0, y1 + 1):
+            for y in range(min(y0, y1), max(y0, y1) + 1):
                 result.append((round(x0 + k * (y - y0)), y))
         pass
     elif algorithm == 'Bresenham':
