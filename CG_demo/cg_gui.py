@@ -336,6 +336,8 @@ QListWidget{
         clip_liang_barsky_act = clip_menu.addAction('Liang-Barsky')
 
         # 连接信号和槽函数
+        # Description: file actions
+        reset_canvas_act.triggered.connect(self.reset_canvas_action)
         exit_act.triggered.connect(qApp.quit)
         # Description: line actions
         line_naive_act.triggered.connect(self.line_naive_action)
@@ -374,6 +376,13 @@ QListWidget{
         _id = str(self.item_cnt)
         self.item_cnt += 1
         return _id
+
+    # Description: file actions
+    def reset_canvas_action(self):
+        self.scene.clear()
+        self.list_widget.clear()
+        self.canvas_widget.item_dict.clear()
+        self.item_cnt = 0
 
     # Description: line actions
     def line_naive_action(self):
@@ -420,6 +429,7 @@ QListWidget{
         self.statusBar().showMessage('Bezier算法绘制曲线')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
+
     def curve_b_spline_action(self):
         self.canvas_widget.start_draw('curve','B-spline', self.get_id())
         self.statusBar().showMessage('B-spline算法绘制曲线')
@@ -430,25 +440,23 @@ QListWidget{
     def translate_action(self):
         self.canvas_widget.start_edit('translate','')
         self.statusBar().showMessage('平移')
-        pass
+
     def rotate_action(self):
         self.canvas_widget.start_edit('rotate','')
         self.statusBar().showMessage('旋转')
-        pass
+
     def scale_action(self):
         self.canvas_widget.start_edit('scale','')
         self.statusBar().showMessage('缩放')
-        pass
 
     # Description: clip actions
     def clip_cohen_sutherland_action(self):
         self.canvas_widget.start_clip('clip','Cohen-Sutherland')
         self.statusBar().showMessage('Cohen-Sutherland算法裁剪线段')
-        pass
+
     def clip_liang_barsky_action(self):
         self.canvas_widget.start_clip('clip','Liang-Barsky')
         self.statusBar().showMessage('Liang-Barsky算法裁剪线段')
-        pass
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
