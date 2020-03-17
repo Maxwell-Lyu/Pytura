@@ -195,34 +195,19 @@ class MyItem(QGraphicsItem):
                 painter.drawRect(self.boundingRect())
 
     def boundingRect(self) -> QRectF:
-        if self.item_type == 'line':
+        if self.item_type == 'line' or self.item_type == 'ellipse':
             x0, y0 = self.p_list[0]
             x1, y1 = self.p_list[1]
             x = min(x0, x1)
             y = min(y0, y1)
             w = max(x0, x1) - x
             h = max(y0, y1) - y
-            return QRectF(x - 1, y - 1, w + 2, h + 2)
-        elif self.item_type == 'polygon':
+        elif self.item_type == 'polygon' or self.item_type == 'curve':
             x = min(list(map(lambda p: p[0], self.p_list)))
             y = min(list(map(lambda p: p[1], self.p_list)))
             w = max(list(map(lambda p: p[0], self.p_list))) - x
             h = max(list(map(lambda p: p[1], self.p_list))) - y
-            return QRectF(x - 1, y - 1, w + 2, h + 2)
-        elif self.item_type == 'ellipse':
-            x0, y0 = self.p_list[0]
-            x1, y1 = self.p_list[1]
-            x = min(x0, x1)
-            y = min(y0, y1)
-            w = max(x0, x1) - x
-            h = max(y0, y1) - y
-            return QRectF(x - 1, y - 1, w + 2, h + 2)
-        elif self.item_type == 'curve':
-            x = min(list(map(lambda p: p[0], self.p_list)))
-            y = min(list(map(lambda p: p[1], self.p_list)))
-            w = max(list(map(lambda p: p[0], self.p_list))) - x
-            h = max(list(map(lambda p: p[1], self.p_list))) - y
-            return QRectF(x - 1, y - 1, w + 2, h + 2)
+        return QRectF(x - 1, y - 1, w + 2, h + 2)
 
 
 class MainWindow(QMainWindow):
