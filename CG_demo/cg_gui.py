@@ -45,12 +45,12 @@ class MyCanvas(QGraphicsView):
 
 
     def finish_draw(self):
-        # self.status = ''
+        self.status = ''
         self.temp_last_point = 0
         self.item_dict[self.temp_id] = self.temp_item
         self.list_widget.addItem(self.temp_id)
-        self.temp_id = self.main_window.get_id()
         self.temp_item.isTemp = False
+        self.updateScene([self.sceneRect()])
 
     def clear_selection(self):
         if self.selected_id != '':
