@@ -50,7 +50,6 @@ class MyCanvas(QGraphicsView):
         self.item_dict[self.temp_id] = self.temp_item
         self.list_widget.addItem(self.temp_id)
         self.temp_id = self.main_window.get_id()
-        self.temp_item.isDirty = False
         self.temp_item.isTemp = False
 
     def clear_selection(self):
@@ -80,6 +79,7 @@ class MyCanvas(QGraphicsView):
                 self.temp_item.p_list.append([x, y])
             else:
                 self.temp_item.p_list[self.temp_last_point] = [x, y]
+            self.temp_item.isDirty = True
         self.updateScene([self.sceneRect()])
         super().mouseMoveEvent(event)
 
@@ -92,10 +92,12 @@ class MyCanvas(QGraphicsView):
         if self.temp_last_point == 0:
             self.temp_last_point += 1
             self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm)
+            self.temp_item.isDirty = True
             self.scene().addItem(self.temp_item)
             self.updateScene([self.sceneRect()])
         else: 
             self.temp_item.p_list[self.temp_last_point] = [x, y]
+            self.temp_item.isDirty = True
             self.temp_last_point += 1
             self.updateScene([self.sceneRect()])
             if self.status == 'line' and len(self.temp_item.p_list) == 2:
@@ -108,8 +110,7 @@ class MyCanvas(QGraphicsView):
         if self.status == 'polygon' and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
         elif self.status == 'curve' and len(self.temp_item.p_list) >= 2:
-            self.temp_item.isTemp = False
-            self.updateScene([self.sceneRect()])
+            self.temp_item.isDirty = True
             self.finish_draw()
         super().mouseDoubleClickEvent(event)
         
@@ -166,37 +167,25 @@ class MyItem(QGraphicsItem):
         self.isTemp = True
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
-        if self.item_type == 'line':
-            if self.isDirty: self.item_pixels = alg.draw_line(self.p_list, self.algorithm)
-            for p in self.item_pixels:
-                painter.drawPoint(*p)
-            if self.selected:
-                painter.setPen(QColor(255, 0, 0))
-                painter.drawRect(self.boundingRect())
-        elif self.item_type == 'polygon':
-            if self.isDirty: self.item_pixels = alg.draw_polygon(self.p_list, self.algorithm)
-            for p in self.item_pixels:
-                painter.drawPoint(*p)
-            if self.selected:
-                painter.setPen(QColor(255, 0, 0))
-                painter.drawRect(self.boundingRect())
-        elif self.item_type == 'ellipse':
-            if self.isDirty: self.item_pixels = alg.draw_ellipse(self.p_list)
-            for p in self.item_pixels:
-                painter.drawPoint(*p)
-            if self.selected:
-                painter.setPen(QColor(255, 0, 0))
-                painter.drawRect(self.boundingRect())
-        elif self.item_type == 'curve':
-            if self.algorithm == 'B-spline' and len(self.p_list) < 4:
-                self.item_pixels = []
-            else:
-                self.item_pixels = alg.draw_curve(self.p_list, self.algorithm, self.isTemp)
-            for p in self.item_pixels:
-                painter.drawPoint(*p)
-            if self.selected:
-                painter.setPen(QColor(255, 0, 0))
-                painter.drawRect(self.boundingRect())
+        if self.isDirty:
+            if self.item_type == 'line':
+                self.item_pixels = alg.draw_line(self.p_list, self.algorithm)
+            elif self.item_type == 'polygon':
+                self.item_pixels = alg.draw_polygon(self.p_list, self.algorithm)
+            elif self.item_type == 'ellipse':
+                self.item_pixels = alg.draw_ellipse(self.p_list)
+            elif self.item_type == 'curve':
+                if self.algorithm == 'B-spline' and len(self.p_list) < 4:
+                    self.item_pixels = []
+                else:
+                    self.item_pixels = alg.draw_curve(self.p_list, self.algorithm, self.isTemp)
+            self.isDirty = False
+
+        for p in self.item_pixels:
+            painter.drawPoint(*p)
+        if self.selected:
+            painter.setPen(QColor(255, 0, 0))
+            painter.drawRect(self.boundingRect())
 
     def boundingRect(self) -> QRectF:
         if self.item_type == 'line' or self.item_type == 'ellipse':
