@@ -54,7 +54,7 @@ class MyCanvas(QGraphicsView):
         if self.selected_id:
             self.status = status
             self.temp_id = self.selected_id
-            self.temp_item.isTemp = True
+            self.item_dict[self.temp_id].isTemp = True
             self.edit_p_list = self.item_dict[self.temp_id].p_list
 
     def start_clip(self, status, algorithm):
