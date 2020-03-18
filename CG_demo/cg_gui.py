@@ -119,9 +119,10 @@ class MyCanvas(QGraphicsView):
         if self.selected_id != '':
             self.item_dict[self.selected_id].selected = False
             self.item_dict[self.selected_id].update()
+        self.selected_id = selected
+        if selected != '':
             self.item_dict[selected].selected = True
             self.item_dict[selected].update()
-        self.selected_id = selected
         self.status = ''
         self.updateScene([self.sceneRect()])
 
