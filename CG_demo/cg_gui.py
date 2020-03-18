@@ -273,6 +273,7 @@ class MyItem(QGraphicsItem):
         if self.selected:
             painter.setPen(QColor(255, 0, 0))
             painter.drawRect(self.boundingRect())
+        if self.isTemp or self.selected:
             self.drawControlPoint(painter)
             if self.item_type == 'curve':
                 self.drawControlPolygon(painter)
