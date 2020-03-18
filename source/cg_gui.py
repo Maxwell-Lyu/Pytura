@@ -23,6 +23,7 @@ from PyQt5.QtWidgets import (
     QToolButton,
     QSplitter,
     QFrame,
+    QLayout,
     QStyleOptionGraphicsItem)
 from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette
 from PyQt5.QtCore import QRectF, QLine, Qt
@@ -326,11 +327,23 @@ class MainWindow(QMainWindow):
     主窗口类
     """
     styleSheet = """
-QPushButton{
-    max-width: 32px;
-    min-height: 32px;
-    margin: 0 0 0 0;
+QWidget{
+    background: #212121;
+    color: #ffffff;
+    border-color: #ffffff;
     padding: 0 0 0 0;
+    margin: 0 0 0 0;
+}
+QGraphicsView{
+    background: #ffffff;
+}
+QPushButton{
+    max-width:  48px;
+    max-height: 48px;
+    min-width:  48px;
+    min-height: 48px;
+    margin: 0px 0px 6px 0px;
+    border: none;
 };
     """
     def __init__(self):
@@ -351,8 +364,12 @@ QPushButton{
 
 
         # Tool Bar
-        toolBar = QWidget()
-        vbox_layout = QVBoxLayout()
+        vbox_layout1 = QVBoxLayout()
+        vbox_layout1.setSpacing(0)
+        vbox_layout1.setAlignment(Qt.AlignTop)
+        vbox_layout2 = QVBoxLayout()
+        vbox_layout2.setSpacing(0)
+        vbox_layout2.setAlignment(Qt.AlignTop)
         ## Tool Btn
         self.set_pen_btn                    = QPushButton('设置画笔')
         self.delete_btn                     = QPushButton('删除选中')
@@ -373,28 +390,28 @@ QPushButton{
         self.clip_liang_barsky_btn          = QPushButton('Liang-Barsky')
 
         ## Add Btn
-        vbox_layout.addWidget(self.line_naive_btn               )
-        vbox_layout.addWidget(self.line_dda_btn                 )
-        vbox_layout.addWidget(self.line_bresenham_btn           )
-        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
-        vbox_layout.addWidget(self.polygon_dda_btn              )
-        vbox_layout.addWidget(self.polygon_bresenham_btn        )
-        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
-        vbox_layout.addWidget(self.ellipse_btn			        )
-        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
-        vbox_layout.addWidget(self.curve_bezier_btn		        )
-        vbox_layout.addWidget(self.curve_b_spline_btn		    )
-        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
-        vbox_layout.addWidget(self.translate_btn			    )
-        vbox_layout.addWidget(self.rotate_btn				    )
-        vbox_layout.addWidget(self.scale_btn				    )
-        vbox_layout.addWidget(self.clip_cohen_sutherland_btn    )
-        vbox_layout.addWidget(self.clip_liang_barsky_btn        )
-        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
-        vbox_layout.addWidget(self.set_pen_btn                  )
-        vbox_layout.addWidget(self.delete_btn                   )
-        vbox_layout.addWidget(self.reset_canvas_btn             )
-        vbox_layout.addWidget(self.exit_btn                     )
+        vbox_layout2.addWidget(self.line_naive_btn               )
+        vbox_layout2.addWidget(self.line_dda_btn                 )
+        vbox_layout2.addWidget(self.line_bresenham_btn           )
+        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout2.addWidget(line)
+        vbox_layout2.addWidget(self.polygon_dda_btn              )
+        vbox_layout2.addWidget(self.polygon_bresenham_btn        )
+        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout2.addWidget(line)
+        vbox_layout2.addWidget(self.ellipse_btn			        )
+        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout2.addWidget(line)
+        vbox_layout2.addWidget(self.curve_bezier_btn		        )
+        vbox_layout2.addWidget(self.curve_b_spline_btn		    )
+        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
+        vbox_layout1.addWidget(self.translate_btn			    )
+        vbox_layout1.addWidget(self.rotate_btn				    )
+        vbox_layout1.addWidget(self.scale_btn				    )
+        vbox_layout1.addWidget(self.clip_cohen_sutherland_btn    )
+        vbox_layout1.addWidget(self.clip_liang_barsky_btn        )
+        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout1.addWidget(line)
+        vbox_layout1.addWidget(self.set_pen_btn                  )
+        vbox_layout1.addWidget(self.delete_btn                   )
+        vbox_layout1.addWidget(self.reset_canvas_btn             )
+        vbox_layout1.addWidget(self.exit_btn                     )
         ## Slots
         self.set_pen_btn                    .clicked.connect(self.set_pen_action              )
         self.delete_btn                     .clicked.connect(self.delete_action               )
@@ -414,7 +431,7 @@ QPushButton{
         self.clip_cohen_sutherland_btn      .clicked.connect(self.clip_cohen_sutherland_action)
         self.clip_liang_barsky_btn          .clicked.connect(self.clip_liang_barsky_action    )
 
-        toolBar.setLayout(vbox_layout)
+        # toolBar.setLayout(vbox_layout)
         """
         # 设置菜单栏
         menubar = self.menuBar()
@@ -471,7 +488,9 @@ QPushButton{
 
         # 设置主窗口的布局
         self.hbox_layout = QHBoxLayout()
-        self.hbox_layout.addWidget(toolBar)
+        # self.hbox_layout.addWidget(toolBar)
+        self.hbox_layout.addLayout(vbox_layout1)
+        self.hbox_layout.addLayout(vbox_layout2)
         self.hbox_layout.addWidget(self.canvas_widget)
         self.hbox_layout.addWidget(self.list_widget, stretch=1)
         self.central_widget = QWidget()
