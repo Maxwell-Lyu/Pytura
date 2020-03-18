@@ -181,8 +181,10 @@ class MyCanvas(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if self.status == 'translate' or self.status == 'rotate' or self.status == 'scale' or self.status == 'clip':
+        if self.status == 'translate' or self.status == 'rotate' or self.status == 'scale':
             self.finish_edit()
+        elif  self.status == 'clip':
+            self.finish_clip()
         elif self.status == 'line' or self.status == 'ellipse':
             self.finish_draw()
         super().mouseReleaseEvent(event)
