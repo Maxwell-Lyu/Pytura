@@ -322,7 +322,7 @@ QListWidget{
         self.scene = QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, 600, 600)
         self.canvas_widget = MyCanvas(self.scene, self)
-        self.canvas_widget.setFixedSize(600, 600)
+        self.canvas_widget.setFixedSize(606, 606)
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
 
