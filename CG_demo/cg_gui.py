@@ -178,23 +178,19 @@ class MyCanvas(QGraphicsView):
             self.temp_item.isDirty = True
             self.temp_last_point += 1
             self.updateScene([self.sceneRect()])
-            if self.status == 'line' and len(self.temp_item.p_list) == 2:
-                self.finish_draw()
-            elif self.status == 'ellipse' and len(self.temp_item.p_list) == 2:
-                self.finish_draw()
         super().mouseReleaseEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if self.status == 'translate' or self.status == 'rotate' or self.status == 'scale':
+        if self.status == 'translate' or self.status == 'rotate' or self.status == 'scale' or self.status == 'clip':
             self.finish_edit()
-        elif self.status == 'clip':
-            self.finish_clip()
+        elif self.status == 'line' or self.status == 'ellipse':
+            self.finish_draw()
         super().mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
-        if self.status == 'polygon' and len(self.temp_item.p_list) >= 2:
+        if self.status == 'polygon' and self.temp_item and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
-        elif self.status == 'curve' and len(self.temp_item.p_list) >= 2:
+        elif self.status == 'curve' and self.temp_item and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
         super().mouseDoubleClickEvent(event)
         
