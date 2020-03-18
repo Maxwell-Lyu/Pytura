@@ -411,7 +411,7 @@ QListWidget{
         self.clip_liang_barsky_btn          .clicked.connect(self.clip_liang_barsky_action    )
 
         toolBar.setLayout(vbox_layout)
-
+        """
         # 设置菜单栏
         menubar = self.menuBar()
         file_menu = menubar.addMenu('文件')
@@ -462,7 +462,7 @@ QListWidget{
         # Description: clip actions
         clip_cohen_sutherland_act.triggered.connect(self.clip_cohen_sutherland_action)
         clip_liang_barsky_act.triggered.connect(self.clip_liang_barsky_action)
-
+        """
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
 
         # 设置主窗口的布局
