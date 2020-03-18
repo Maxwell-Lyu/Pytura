@@ -15,10 +15,17 @@ from PyQt5.QtWidgets import (
     QGraphicsItem,
     QListWidget,
     QHBoxLayout,
+    QVBoxLayout,
     QWidget,
+    QLabel,
+    QPushButton,
+    QToolBox,
+    QToolButton,
+    QSplitter,
+    QFrame,
     QStyleOptionGraphicsItem)
 from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette
-from PyQt5.QtCore import QRectF, QLine
+from PyQt5.QtCore import QRectF, QLine, Qt
 
 
 class MyCanvas(QGraphicsView):
@@ -338,6 +345,73 @@ QListWidget{
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
 
+
+        # Tool Bar
+        toolBar = QWidget()
+        vbox_layout = QVBoxLayout()
+        ## Tool Btn
+        self.set_pen_btn                    = QPushButton('设置画笔')
+        self.delete_btn                     = QPushButton('删除选中')
+        self.reset_canvas_btn               = QPushButton('重置画布')
+        self.exit_btn                       = QPushButton('退出')
+        self.line_naive_btn                 = QPushButton('Naive')
+        self.line_dda_btn                   = QPushButton('DDA')
+        self.line_bresenham_btn             = QPushButton('Bresenham')
+        self.polygon_dda_btn                = QPushButton('DDA')
+        self.polygon_bresenham_btn          = QPushButton('Bresenham')
+        self.ellipse_btn					= QPushButton('椭圆')
+        self.curve_bezier_btn				= QPushButton('Bezier')
+        self.curve_b_spline_btn				= QPushButton('B-spline')
+        self.translate_btn					= QPushButton('平移')
+        self.rotate_btn						= QPushButton('旋转')
+        self.scale_btn						= QPushButton('缩放')
+        self.clip_cohen_sutherland_btn      = QPushButton('Cohen-Sutherland')
+        self.clip_liang_barsky_btn          = QPushButton('Liang-Barsky')
+
+        ## Add Btn
+        vbox_layout.addWidget(self.line_naive_btn               )
+        vbox_layout.addWidget(self.line_dda_btn                 )
+        vbox_layout.addWidget(self.line_bresenham_btn           )
+        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
+        vbox_layout.addWidget(self.polygon_dda_btn              )
+        vbox_layout.addWidget(self.polygon_bresenham_btn        )
+        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
+        vbox_layout.addWidget(self.ellipse_btn			        )
+        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
+        vbox_layout.addWidget(self.curve_bezier_btn		        )
+        vbox_layout.addWidget(self.curve_b_spline_btn		    )
+        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
+        vbox_layout.addWidget(self.translate_btn			    )
+        vbox_layout.addWidget(self.rotate_btn				    )
+        vbox_layout.addWidget(self.scale_btn				    )
+        vbox_layout.addWidget(self.clip_cohen_sutherland_btn    )
+        vbox_layout.addWidget(self.clip_liang_barsky_btn        )
+        line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
+        vbox_layout.addWidget(self.set_pen_btn                  )
+        vbox_layout.addWidget(self.delete_btn                   )
+        vbox_layout.addWidget(self.reset_canvas_btn             )
+        vbox_layout.addWidget(self.exit_btn                     )
+        ## Slots
+        self.set_pen_btn                    .clicked.connect(self.set_pen_action              )
+        self.delete_btn                     .clicked.connect(self.delete_action               )
+        self.reset_canvas_btn               .clicked.connect(self.reset_canvas_action         )
+        self.exit_btn                       .clicked.connect(qApp.quit                        )
+        self.line_naive_btn                 .clicked.connect(self.line_naive_action           )
+        self.line_dda_btn                   .clicked.connect(self.line_dda_action             )
+        self.line_bresenham_btn             .clicked.connect(self.line_bresenham_action       )
+        self.polygon_dda_btn                .clicked.connect(self.polygon_dda_action          )
+        self.polygon_bresenham_btn          .clicked.connect(self.polygon_bresenham_action    )
+        self.ellipse_btn			        .clicked.connect(self.ellipse_action			  )
+        self.curve_bezier_btn		        .clicked.connect(self.curve_bezier_action		  )
+        self.curve_b_spline_btn		        .clicked.connect(self.curve_b_spline_action		  )
+        self.translate_btn			        .clicked.connect(self.translate_action			  )
+        self.rotate_btn				        .clicked.connect(self.rotate_action				  )
+        self.scale_btn				        .clicked.connect(self.scale_action				  )
+        self.clip_cohen_sutherland_btn      .clicked.connect(self.clip_cohen_sutherland_action)
+        self.clip_liang_barsky_btn          .clicked.connect(self.clip_liang_barsky_action    )
+
+        toolBar.setLayout(vbox_layout)
+
         # 设置菜单栏
         menubar = self.menuBar()
         file_menu = menubar.addMenu('文件')
@@ -393,6 +467,7 @@ QListWidget{
 
         # 设置主窗口的布局
         self.hbox_layout = QHBoxLayout()
+        self.hbox_layout.addWidget(toolBar)
         self.hbox_layout.addWidget(self.canvas_widget)
         self.hbox_layout.addWidget(self.list_widget, stretch=1)
         self.central_widget = QWidget()
@@ -401,6 +476,13 @@ QListWidget{
         self.statusBar().showMessage('空闲')
         self.resize(600, 600)
         self.setWindowTitle('CG Demo')
+
+        # tool_widget = QWidget()
+        # tool_layout = QVBoxLayout()
+        # self.hbox_layout.addWidget(tool_widget)
+        # self.btn = QPushButton('test')
+        # tool_layout.addWidget(self.btn)
+        # tool_widget.setLayout(tool_layout)
 
     def get_id(self):
         _id = str(self.item_cnt)
@@ -416,6 +498,10 @@ QListWidget{
         self.list_widget.clear()
         self.canvas_widget.item_dict.clear()
         self.item_cnt = 0
+
+    def delete_action(self):
+        self.canvas_widget.delete_selection()
+        self.list_widget.takeItem(self.list_widget.selectedIndexes()[0].row())
 
     # Description: line actions
     def line_naive_action(self):
