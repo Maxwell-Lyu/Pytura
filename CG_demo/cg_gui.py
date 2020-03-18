@@ -101,14 +101,20 @@ class MyCanvas(QGraphicsView):
             self.item_dict[self.selected_id].selected = False
             self.selected_id = ''
 
+    def delete_selection(self):
+        if self.selected_id != '':
+            item = self.item_dict.pop(self.selected_id)
+            self.scene().removeItem(item)
+            self.selected_id = ''
+
     def selection_changed(self, selected):
         self.main_window.statusBar().showMessage('图元选择： %s' % selected)
         if self.selected_id != '':
             self.item_dict[self.selected_id].selected = False
             self.item_dict[self.selected_id].update()
+            self.item_dict[selected].selected = True
+            self.item_dict[selected].update()
         self.selected_id = selected
-        self.item_dict[selected].selected = True
-        self.item_dict[selected].update()
         self.status = ''
         self.updateScene([self.sceneRect()])
 
