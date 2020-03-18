@@ -372,7 +372,7 @@ QListWidget{
         # Description: ellipse actions
         ellipse_act.triggered.connect(self.ellipse_action)
         # Description: curve actions
-        curve_bezier_act.triggered.connect(self.curve_bezier_aciion)
+        curve_bezier_act.triggered.connect(self.curve_bezier_action)
         curve_b_spline_act.triggered.connect(self.curve_b_spline_action)
         # Description: edit actions
         translate_act.triggered.connect(self.translate_action)
@@ -450,7 +450,7 @@ QListWidget{
         self.canvas_widget.clear_selection()
 
     # Description: curve actions
-    def curve_bezier_aciion(self):
+    def curve_bezier_action(self):
         self.canvas_widget.start_draw('curve','Bezier', self.get_id())
         self.statusBar().showMessage('Bezier算法绘制曲线')
         self.list_widget.clearSelection()
