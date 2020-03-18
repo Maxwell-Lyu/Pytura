@@ -6,6 +6,7 @@ import math
 import cg_algorithms as alg
 from typing import Optional
 from PyQt5.QtWidgets import (
+    QColorDialog, 
     QApplication,
     QMainWindow,
     qApp,
@@ -40,6 +41,8 @@ class MyCanvas(QGraphicsView):
 
         self.edit_data = []
         self.edit_p_list = []
+
+        self.pen_color = QColor(0, 0, 0)
 
     def start_draw(self, status, algorithm, item_id):
         self.status = status
@@ -160,13 +163,13 @@ class MyCanvas(QGraphicsView):
         elif self.status == 'scale':
             self.edit_data = [[x - 100, y - 100], [x, y]]
         elif self.status == 'clip':
-            self.temp_item = MyItem(self.temp_id, 'polygon', [[x, y], [x, y], [x, y], [x, y]], 'DDA')
+            self.temp_item = MyItem(self.temp_id, 'polygon', [[x, y], [x, y], [x, y], [x, y]], 'DDA', QColor(0, 0, 255))
             self.scene().addItem(self.temp_item)
             self.updateScene([self.sceneRect()])
             pass
         elif self.temp_last_point == 0:
             self.temp_last_point += 1
-            self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm)
+            self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm, self.pen_color)
             self.temp_item.isDirty = True
             self.scene().addItem(self.temp_item)
             self.updateScene([self.sceneRect()])
@@ -228,7 +231,7 @@ class MyItem(QGraphicsItem):
     """
     自定义图元类，继承自QGraphicsItem
     """
-    def __init__(self, item_id: str, item_type: str, p_list: list, algorithm: str = '', parent: QGraphicsItem = None):
+    def __init__(self, item_id: str, item_type: str, p_list: list, algorithm: str = '', color: QColor = None, parent: QGraphicsItem = None):
         """
 
         :param item_id: 图元ID
@@ -246,6 +249,7 @@ class MyItem(QGraphicsItem):
         self.selected = False
         self.isDirty = True
         self.isTemp = True
+        self.color = color
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
         if self.isDirty:
@@ -263,6 +267,7 @@ class MyItem(QGraphicsItem):
             self.isDirty = False
 
         for p in self.item_pixels:
+            painter.setPen(self.color)
             painter.drawPoint(*p)
         if self.selected:
             painter.setPen(QColor(255, 0, 0))
@@ -337,6 +342,7 @@ QListWidget{
 
         # 连接信号和槽函数
         # Description: file actions
+        set_pen_act.triggered.connect(self.set_pen_action)
         reset_canvas_act.triggered.connect(self.reset_canvas_action)
         exit_act.triggered.connect(qApp.quit)
         # Description: line actions
@@ -378,6 +384,9 @@ QListWidget{
         return _id
 
     # Description: file actions
+    def set_pen_action(self):
+        self.canvas_widget.pen_color = QColorDialog.getColor()
+
     def reset_canvas_action(self):
         self.scene.clear()
         self.list_widget.clear()
