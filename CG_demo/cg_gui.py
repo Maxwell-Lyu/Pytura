@@ -300,7 +300,7 @@ class MyItem(QGraphicsItem):
             painter.drawRect(QRectF(x - 2, y - 2, 4, 4))    
 
     def drawControlPolygon(self, painter: QPainter):
-        painter.setPen(QColor(255, 0, 255))
+        painter.setPen(QColor(255, 200, 255))
         for i in range(len(self.p_list) - 1):
             # painter.drawLine(QLine(self.p_list[i][0], self.p_list[i + 1][1], self.p_list[i][0], self.p_list[i + 1][1]))
             painter.drawLine(QLine(self.p_list[i][0], self.p_list[i][1], self.p_list[i + 1][0], self.p_list[i + 1][1]))
