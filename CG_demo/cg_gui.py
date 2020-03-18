@@ -17,8 +17,8 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QWidget,
     QStyleOptionGraphicsItem)
-from PyQt5.QtGui import QPainter, QMouseEvent, QColor
-from PyQt5.QtCore import QRectF
+from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette
+from PyQt5.QtCore import QRectF, QLine
 
 
 class MyCanvas(QGraphicsView):
@@ -268,6 +268,9 @@ class MyItem(QGraphicsItem):
         if self.selected:
             painter.setPen(QColor(255, 0, 0))
             painter.drawRect(self.boundingRect())
+            self.drawControlPoint(painter)
+            if self.item_type == 'curve':
+                self.drawControlPolygon(painter)
 
     def boundingRect(self) -> QRectF:
         if self.item_type == 'line' or self.item_type == 'ellipse':
@@ -283,6 +286,19 @@ class MyItem(QGraphicsItem):
             w = max(list(map(lambda p: p[0], self.p_list))) - x
             h = max(list(map(lambda p: p[1], self.p_list))) - y
         return QRectF(x - 1, y - 1, w + 2, h + 2)
+    
+    def drawControlPoint(self, painter: QPainter):
+        painter.setPen(QColor(255, 0, 255))
+        for p in self.p_list:
+            x, y = p
+            painter.drawRect(QRectF(x - 1, y - 1, 2, 2))
+            painter.drawRect(QRectF(x - 2, y - 2, 4, 4))    
+
+    def drawControlPolygon(self, painter: QPainter):
+        painter.setPen(QColor(255, 0, 255))
+        for i in range(len(self.p_list) - 1):
+            # painter.drawLine(QLine(self.p_list[i][0], self.p_list[i + 1][1], self.p_list[i][0], self.p_list[i + 1][1]))
+            painter.drawLine(QLine(self.p_list[i][0], self.p_list[i][1], self.p_list[i + 1][0], self.p_list[i + 1][1]))
 
 
 class MainWindow(QMainWindow):
