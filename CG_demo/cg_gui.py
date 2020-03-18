@@ -65,6 +65,7 @@ class MyCanvas(QGraphicsView):
 
     def finish_draw(self):
         self.status = ''
+        self.main_window.statusBar().showMessage('空闲')
         self.temp_last_point = 0
         self.item_dict[self.temp_id] = self.temp_item
         self.list_widget.addItem(self.temp_id)
@@ -75,6 +76,7 @@ class MyCanvas(QGraphicsView):
 
     def finish_edit(self):
         self.status = ''
+        self.main_window.statusBar().showMessage('空闲')
         self.temp_id = ''
         self.temp_item.isTemp = False
         self.temp_item.isDirty = True
@@ -83,6 +85,7 @@ class MyCanvas(QGraphicsView):
 
     def finish_clip(self):
         self.status = ''
+        self.main_window.statusBar().showMessage('空闲')
         self.temp_id = ''
         self.edit_data = []
         minPoint = min(self.temp_item.p_list)
