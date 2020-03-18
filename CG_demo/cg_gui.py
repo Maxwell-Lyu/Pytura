@@ -325,9 +325,12 @@ class MainWindow(QMainWindow):
     主窗口类
     """
     styleSheet = """
-QListWidget{
-//  background: red;
-}
+QPushButton{
+    max-width: 32px;
+    min-height: 32px;
+    margin: 0 0 0 0;
+    padding: 0 0 0 0;
+};
     """
     def __init__(self):
         super().__init__()
