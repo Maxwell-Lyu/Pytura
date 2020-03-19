@@ -176,26 +176,31 @@ class MyCanvas(QGraphicsView):
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
-        if self.status == 'translate' or self.status == 'rotate':
+        if self.status == '':
+            if self.selected_id: self.item_dict[self.selected_id].selected = False
+            if len(self.main_window.canvas_widget.items(QPoint(x, y))):
+                self.selected_id = self.main_window.canvas_widget.items(QPoint(x, y))[0].id
+                self.item_dict[self.selected_id].selected = True
+            else:
+                self.selected_id = ''
+        elif self.status == 'translate' or self.status == 'rotate':
             self.edit_data = [[x, y], [x, y]]
         elif self.status == 'scale':
             self.edit_data = [[x - 100, y - 100], [x, y]]
         elif self.status == 'clip':
             self.temp_item = MyItem(self.temp_id, 'polygon', [[x, y], [x, y], [x, y], [x, y]], 'DDA', QColor(0, 0, 255))
             self.scene().addItem(self.temp_item)
-            self.updateScene([self.sceneRect()])
             pass
         elif self.temp_last_point == 0:
             self.temp_last_point += 1
             self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm, self.pen_color)
             self.temp_item.isDirty = True
             self.scene().addItem(self.temp_item)
-            self.updateScene([self.sceneRect()])
         else: 
             self.temp_item.p_list[self.temp_last_point] = [x, y]
             self.temp_item.isDirty = True
             self.temp_last_point += 1
-            self.updateScene([self.sceneRect()])
+        self.updateScene([self.sceneRect()])
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
