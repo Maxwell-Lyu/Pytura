@@ -196,7 +196,7 @@ class MyCanvas(QGraphicsView):
             self.temp_item.isDirty = True
             self.temp_last_point += 1
             self.updateScene([self.sceneRect()])
-        super().mouseReleaseEvent(event)
+        super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         if self.status == 'translate' or self.status == 'rotate' or self.status == 'scale':
