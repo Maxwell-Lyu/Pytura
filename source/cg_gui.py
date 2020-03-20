@@ -194,7 +194,7 @@ class MyCanvas(QGraphicsView):
         elif self.status == 'scale':
             self.edit_data = [[x - 100, y - 100], [x, y]]
         elif self.status == 'clip':
-            self.temp_item = MyItem(self.temp_id, 'polygon', [[x, y], [x, y], [x, y], [x, y]], 'DDA', QColor(0, 0, 255))
+            self.temp_item = MyItem(self.temp_id, 'polygon', [[x, y], [x, y], [x, y], [x, y]], 'DDA', QColor(255, 0, 0))
             self.scene().addItem(self.temp_item)
             pass
         elif self.temp_last_point == 0:
@@ -297,7 +297,7 @@ class MyItem(QGraphicsItem):
             painter.setPen(self.color)
             painter.drawPoint(*p)
         if self.selected:
-            painter.setPen(QColor(255, 0, 0))
+            painter.setPen(QColor(21, 101, 192))
             painter.drawRect(self.boundingRect())
         if self.isTemp or self.selected:
             self.drawControlPoint(painter)
@@ -320,14 +320,14 @@ class MyItem(QGraphicsItem):
         return QRectF(x - 1, y - 1, w + 2, h + 2)
     
     def drawControlPoint(self, painter: QPainter):
-        painter.setPen(QColor(255, 0, 255))
+        painter.setPen(QColor(30, 136, 229))
         for p in self.p_list:
             x, y = p
             painter.drawRect(QRectF(x - 1, y - 1, 2, 2))
             painter.drawRect(QRectF(x - 2, y - 2, 4, 4))    
 
     def drawControlPolygon(self, painter: QPainter):
-        painter.setPen(QColor(255, 200, 255))
+        painter.setPen(QColor(114, 202, 246))
         for i in range(len(self.p_list) - 1):
             # painter.drawLine(QLine(self.p_list[i][0], self.p_list[i + 1][1], self.p_list[i][0], self.p_list[i + 1][1]))
             painter.drawLine(QLine(self.p_list[i][0], self.p_list[i][1], self.p_list[i + 1][0], self.p_list[i + 1][1]))
@@ -405,7 +405,7 @@ QPushButton:checked {
         vbox_layout2.setSpacing(0)
         vbox_layout2.setAlignment(Qt.AlignTop)
         ## Tool Btn
-        self.set_pen_btn                    = QPushButton('')
+        self.set_pen_btn                    = QPushButton(QIcon('../asset/icon/set_pen.svg'), '')
         self.set_pen_btn.setStyleSheet("""  
             max-width:  40px;
             max-height: 40px;
@@ -419,22 +419,38 @@ QPushButton:checked {
             border-image: none;
             """
         )
-        self.delete_btn                     = QPushButton('删除选中')
-        self.reset_canvas_btn               = QPushButton('重置画布')
-        self.exit_btn                       = QPushButton('退出')
-        self.line_naive_btn                 = QPushButton('Naive')
-        self.line_dda_btn                   = QPushButton('DDA')
-        self.line_bresenham_btn             = QPushButton('Bresenham')
-        self.polygon_dda_btn                = QPushButton('DDA')
-        self.polygon_bresenham_btn          = QPushButton('Bresenham')
-        self.ellipse_btn					= QPushButton('椭圆')
-        self.curve_bezier_btn				= QPushButton('Bezier')
-        self.curve_b_spline_btn				= QPushButton('B-spline')
-        self.translate_btn					= QPushButton('平移')
-        self.rotate_btn						= QPushButton('旋转')
-        self.scale_btn						= QPushButton('缩放')
-        self.clip_cohen_sutherland_btn      = QPushButton('Cohen-Sutherland')
-        self.clip_liang_barsky_btn          = QPushButton('Liang-Barsky')
+        self.delete_btn                     = QPushButton(QIcon('../asset/icon/delete.svg'), '')
+        self.reset_canvas_btn               = QPushButton(QIcon('../asset/icon/reset_canvas.svg'), '')
+        self.exit_btn                       = QPushButton(QIcon('../asset/icon/exit.svg'), '')
+        self.line_naive_btn                 = QPushButton(QIcon('../asset/icon/line_naive.svg'), '')
+        self.line_dda_btn                   = QPushButton(QIcon('../asset/icon/line_dda.svg'), '')
+        self.line_bresenham_btn             = QPushButton(QIcon('../asset/icon/line_bresenham.svg'), '')
+        self.polygon_dda_btn                = QPushButton(QIcon('../asset/icon/polygon_dda.svg'), '')
+        self.polygon_bresenham_btn          = QPushButton(QIcon('../asset/icon/polygon_bresenham.svg'), '')
+        self.ellipse_btn					= QPushButton(QIcon('../asset/icon/ellipse.svg'), '')
+        self.curve_bezier_btn				= QPushButton(QIcon('../asset/icon/curve_bezier.svg'), '')
+        self.curve_b_spline_btn				= QPushButton(QIcon('../asset/icon/curve_b_spline.svg'), '')
+        self.translate_btn					= QPushButton(QIcon('../asset/icon/translate.svg'), '')
+        self.rotate_btn						= QPushButton(QIcon('../asset/icon/rotate.svg'), '')
+        self.scale_btn						= QPushButton(QIcon('../asset/icon/scale.svg'), '')
+        self.clip_cohen_sutherland_btn      = QPushButton(QIcon('../asset/icon/clip_cohen_sutherland.svg'), '')
+        self.clip_liang_barsky_btn          = QPushButton(QIcon('../asset/icon/clip_liang_barsky.svg'), '')
+        self.delete_btn                     .setToolTip('删除选中图元')
+        self.reset_canvas_btn               .setToolTip('重置画布')
+        self.exit_btn                       .setToolTip('退出')
+        self.line_naive_btn                 .setToolTip('Naive算法绘制线段')
+        self.line_dda_btn                   .setToolTip('DDA算法绘制线段')
+        self.line_bresenham_btn             .setToolTip('Bresenham算法绘制线段')
+        self.polygon_dda_btn                .setToolTip('DDA算法绘制多边形')
+        self.polygon_bresenham_btn          .setToolTip('Bresenham算法绘制多边形')
+        self.ellipse_btn					.setToolTip('中点圆算法绘制椭圆')
+        self.curve_bezier_btn				.setToolTip('Bezier算法绘制曲线')
+        self.curve_b_spline_btn				.setToolTip('B-spline算法绘制曲线')
+        self.translate_btn					.setToolTip('平移')
+        self.rotate_btn						.setToolTip('旋转')
+        self.scale_btn						.setToolTip('缩放')
+        self.clip_cohen_sutherland_btn      .setToolTip('Cohen-Sutherland算法裁剪线段')
+        self.clip_liang_barsky_btn          .setToolTip('Liang-Barsky算法裁剪线段')
         self.line_naive_btn                 .setCheckable(True)
         self.line_dda_btn                   .setCheckable(True)
         self.line_bresenham_btn             .setCheckable(True)
@@ -543,7 +559,7 @@ QPushButton:checked {
         clip_cohen_sutherland_act.triggered.connect(self.clip_cohen_sutherland_action)
         clip_liang_barsky_act.triggered.connect(self.clip_liang_barsky_action)
         """
-        self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
+        # self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
         self.canvas_widget.statusChanged.connect(self.updateUI)
 
         # 设置主窗口的布局
@@ -725,7 +741,7 @@ QPushButton:checked {
             message = '缩放'
             self.scale_btn						.setChecked(True)
         elif new == 'clip':
-            message = algorithm + '裁剪线段'
+            message = algorithm + '算法裁剪线段'
             if algorithm == 'Cohen-Sutherland':
                 self.clip_cohen_sutherland_btn      .setChecked(True)
             elif algorithm == 'Liang-Barsky':
