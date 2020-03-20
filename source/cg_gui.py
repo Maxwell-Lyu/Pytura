@@ -24,15 +24,22 @@ from PyQt5.QtWidgets import (
     QSplitter,
     QFrame,
     QLayout,
+    QStyle,
     QStyleOptionGraphicsItem)
-from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette
-from PyQt5.QtCore import QRectF, QLine, Qt
+from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon
+from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
 
 
 class MyCanvas(QGraphicsView):
     """
     画布窗体类，继承自QGraphicsView，采用QGraphicsView、QGraphicsScene、QGraphicsItem的绘图框架
     """
+    statusChanged = pyqtSignal(str, str, str)
+
+    def set_status(self, value):
+        self.statusChanged.emit(self.status, value, self.temp_algorithm)
+        self.status = value
+
     def __init__(self, *args):
         super().__init__(*args)
         self.setMouseTracking(True)
@@ -53,27 +60,30 @@ class MyCanvas(QGraphicsView):
         self.pen_color = QColor(0, 0, 0)
 
     def start_draw(self, status, algorithm, item_id):
-        self.status = status
         self.temp_algorithm = algorithm
+        self.set_status(status)
         self.temp_id = item_id
         self.temp_last_point = 0
 
     def start_edit(self, status, algorithm):
         if self.selected_id:
-            self.status = status
+            self.set_status(status)
             self.temp_id = self.selected_id
             self.item_dict[self.temp_id].isTemp = True
             self.edit_p_list = self.item_dict[self.temp_id].p_list
+        else:
+            self.set_status('')
 
     def start_clip(self, status, algorithm):
         if self.selected_id and self.item_dict[self.selected_id].item_type == 'line':
-            self.status = status
             self.temp_algorithm = algorithm
+            self.set_status(status)
             self.temp_id = 'clip-rect'
+        else:
+            self.set_status('')
 
     def finish_draw(self):
-        self.status = ''
-        self.main_window.statusBar().showMessage('空闲')
+        self.set_status('')
         self.temp_last_point = 0
         self.item_dict[self.temp_id] = self.temp_item
         self.list_widget.addItem(self.temp_id)
@@ -83,8 +93,7 @@ class MyCanvas(QGraphicsView):
         self.updateScene([self.sceneRect()])
 
     def finish_edit(self):
-        self.status = ''
-        self.main_window.statusBar().showMessage('空闲')
+        self.set_status('')
         self.temp_id = ''
         self.temp_item.isTemp = False
         self.temp_item.isDirty = True
@@ -92,8 +101,7 @@ class MyCanvas(QGraphicsView):
         self.updateScene([self.sceneRect()])
 
     def finish_clip(self):
-        self.status = ''
-        self.main_window.statusBar().showMessage('空闲')
+        self.set_status('')
         self.temp_id = ''
         self.edit_data = []
         minPoint = min(self.temp_item.p_list)
@@ -124,7 +132,7 @@ class MyCanvas(QGraphicsView):
         if selected != '':
             self.item_dict[selected].selected = True
             self.item_dict[selected].update()
-        self.status = ''
+        self.set_status('')
         self.updateScene([self.sceneRect()])
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
@@ -154,7 +162,7 @@ class MyCanvas(QGraphicsView):
             self.edit_data[1] = [x, y]
             dx = self.edit_data[1][0] - self.edit_data[0][0]
             dy = self.edit_data[1][1] - self.edit_data[0][1]
-            new_p_list = alg.scale(self.edit_p_list, self.edit_data[0][0] + 100, self.edit_data[0][1] + 100, max(dx, dy) / 100)
+            new_p_list = alg.scale(self.edit_p_list, self.edit_data[0][0] + 100, self.edit_data[0][1] + 100, dx / 100)
             self.item_dict[self.selected_id].p_list = new_p_list
             self.item_dict[self.selected_id].isDirty = True
         elif self.status == 'clip' and len(self.temp_item.p_list) == 4:
@@ -171,8 +179,6 @@ class MyCanvas(QGraphicsView):
         super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        if self.status == '':
-            return
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
@@ -338,19 +344,42 @@ QWidget{
     border-color: #ffffff;
     padding: 0 0 0 0;
     margin: 0 0 0 0;
+	outline: none;
+
 }
 QGraphicsView{
     background: #ffffff;
 }
 QPushButton{
-    max-width:  48px;
-    max-height: 48px;
-    min-width:  48px;
-    min-height: 48px;
+    icon-size: 32px;
+    max-width:  40px;
+    max-height: 40px;
+    min-width:  40px;
+    min-height: 40px;
     margin: 0px 0px 6px 0px;
-    border: none;
-};
+	border-width: 4px;
+    border-image: url(../asset/img/btn_default.png) 4 stretch;
+
+}
+QPushButton:pressed{
+    border-image: url(../asset/img/btn_pressed.png) 4 stretch;
+}
+QPushButton:hover:!pressed:!checked{
+    border-image: url(../asset/img/btn_hover.png) 4 stretch;
+}
+QPushButton:checked {
+    border-image: url(../asset/img/btn_checked.png) 4 stretch;
+}
     """
+# QPushButton:checked:hover {
+#     background: green;
+# }
+# QPushButton:checked:pressed {
+#     background: white;
+# }
+# QPushButton:checked {
+#     background: gray;
+# }
     def __init__(self):
         super().__init__()
         self.setStyleSheet(self.styleSheet)
@@ -376,7 +405,20 @@ QPushButton{
         vbox_layout2.setSpacing(0)
         vbox_layout2.setAlignment(Qt.AlignTop)
         ## Tool Btn
-        self.set_pen_btn                    = QPushButton('设置画笔')
+        self.set_pen_btn                    = QPushButton('')
+        self.set_pen_btn.setStyleSheet("""  
+            max-width:  40px;
+            max-height: 40px;
+            min-width:  40px;
+            min-height: 40px;
+            margin: 0px 0px 6px 2px;
+            border-width: 2px;
+            border-style: outset;
+            border-color: white;
+            background: black;
+            border-image: none;
+            """
+        )
         self.delete_btn                     = QPushButton('删除选中')
         self.reset_canvas_btn               = QPushButton('重置画布')
         self.exit_btn                       = QPushButton('退出')
@@ -393,7 +435,19 @@ QPushButton{
         self.scale_btn						= QPushButton('缩放')
         self.clip_cohen_sutherland_btn      = QPushButton('Cohen-Sutherland')
         self.clip_liang_barsky_btn          = QPushButton('Liang-Barsky')
-
+        self.line_naive_btn                 .setCheckable(True)
+        self.line_dda_btn                   .setCheckable(True)
+        self.line_bresenham_btn             .setCheckable(True)
+        self.polygon_dda_btn                .setCheckable(True)
+        self.polygon_bresenham_btn          .setCheckable(True)
+        self.ellipse_btn					.setCheckable(True)
+        self.curve_bezier_btn				.setCheckable(True)
+        self.curve_b_spline_btn				.setCheckable(True)
+        self.translate_btn					.setCheckable(True)
+        self.rotate_btn						.setCheckable(True)
+        self.scale_btn						.setCheckable(True)
+        self.clip_cohen_sutherland_btn      .setCheckable(True)
+        self.clip_liang_barsky_btn          .setCheckable(True)
         ## Add Btn
         vbox_layout2.addWidget(self.line_naive_btn               )
         vbox_layout2.addWidget(self.line_dda_btn                 )
@@ -406,14 +460,14 @@ QPushButton{
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout2.addWidget(line)
         vbox_layout2.addWidget(self.curve_bezier_btn		        )
         vbox_layout2.addWidget(self.curve_b_spline_btn		    )
-        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
+        vbox_layout2.addWidget(self.set_pen_btn                  )
+        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(linme)
         vbox_layout1.addWidget(self.translate_btn			    )
         vbox_layout1.addWidget(self.rotate_btn				    )
         vbox_layout1.addWidget(self.scale_btn				    )
         vbox_layout1.addWidget(self.clip_cohen_sutherland_btn    )
         vbox_layout1.addWidget(self.clip_liang_barsky_btn        )
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout1.addWidget(line)
-        vbox_layout1.addWidget(self.set_pen_btn                  )
         vbox_layout1.addWidget(self.delete_btn                   )
         vbox_layout1.addWidget(self.reset_canvas_btn             )
         vbox_layout1.addWidget(self.exit_btn                     )
@@ -490,13 +544,14 @@ QPushButton{
         clip_liang_barsky_act.triggered.connect(self.clip_liang_barsky_action)
         """
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
+        self.canvas_widget.statusChanged.connect(self.updateUI)
 
         # 设置主窗口的布局
         self.hbox_layout = QHBoxLayout()
         # self.hbox_layout.addWidget(toolBar)
-        self.hbox_layout.addLayout(vbox_layout1)
         self.hbox_layout.addLayout(vbox_layout2)
         self.hbox_layout.addWidget(self.canvas_widget)
+        self.hbox_layout.addLayout(vbox_layout1)
         self.hbox_layout.addWidget(self.list_widget, stretch=1)
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.hbox_layout)
@@ -519,7 +574,21 @@ QPushButton{
 
     # Description: file actions
     def set_pen_action(self):
-        self.canvas_widget.pen_color = QColorDialog.getColor()
+        color = QColorDialog.getColor()
+        self.canvas_widget.pen_color = color
+        self.set_pen_btn.setStyleSheet('background: rgb(%d,%d,%d); \n %s' % (color.red(), color.green(), color.blue(), 
+        """  
+            max-width:  40px;
+            max-height: 40px;
+            min-width:  40px;
+            min-height: 40px;
+            margin: 0px 0px 6px 2px;
+            border-width: 2px;
+            border-style: outset;
+            border-color: white;
+            border-image: none;
+            """)
+        )
 
     def reset_canvas_action(self):
         self.scene.clear()
@@ -534,76 +603,136 @@ QPushButton{
     # Description: line actions
     def line_naive_action(self):
         self.canvas_widget.start_draw('line','Naive', self.get_id())
-        self.statusBar().showMessage('Naive算法绘制线段')
+        # self.statusBar().showMessage('Naive算法绘制线段')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     def line_dda_action(self):
         self.canvas_widget.start_draw('line','DDA', self.get_id())
-        self.statusBar().showMessage('DDA算法绘制线段')
+        # self.statusBar().showMessage('DDA算法绘制线段')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     def line_bresenham_action(self):
         self.canvas_widget.start_draw('line','Bresenham', self.get_id())
-        self.statusBar().showMessage('Bresenham算法绘制线段')
+        # self.statusBar().showMessage('Bresenham算法绘制线段')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     # Description: polygon actions
     def polygon_dda_action(self):
         self.canvas_widget.start_draw('polygon','DDA', self.get_id())
-        self.statusBar().showMessage('DDA算法绘制多边形')
+        # self.statusBar().showMessage('DDA算法绘制多边形')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     def polygon_bresenham_action(self):
         self.canvas_widget.start_draw('polygon','Bresenham', self.get_id())
-        self.statusBar().showMessage('Bresenham算法绘制多边形')
+        # self.statusBar().showMessage('Bresenham算法绘制多边形')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     # Description: ellipse actions
     def ellipse_action(self):
         self.canvas_widget.start_draw('ellipse','', self.get_id())
-        self.statusBar().showMessage('中点圆生成算法绘制椭圆')
+        # self.statusBar().showMessage('中点圆生成算法绘制椭圆')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     # Description: curve actions
     def curve_bezier_action(self):
         self.canvas_widget.start_draw('curve','Bezier', self.get_id())
-        self.statusBar().showMessage('Bezier算法绘制曲线')
+        # self.statusBar().showMessage('Bezier算法绘制曲线')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     def curve_b_spline_action(self):
         self.canvas_widget.start_draw('curve','B-spline', self.get_id())
-        self.statusBar().showMessage('B-spline算法绘制曲线')
+        # self.statusBar().showMessage('B-spline算法绘制曲线')
         self.list_widget.clearSelection()
         self.canvas_widget.clear_selection()
 
     # Description: edit actions
     def translate_action(self):
         self.canvas_widget.start_edit('translate','')
-        self.statusBar().showMessage('平移')
+        # self.statusBar().showMessage('平移')
 
     def rotate_action(self):
         self.canvas_widget.start_edit('rotate','')
-        self.statusBar().showMessage('旋转')
+        # self.statusBar().showMessage('旋转')
 
     def scale_action(self):
         self.canvas_widget.start_edit('scale','')
-        self.statusBar().showMessage('缩放')
+        # self.statusBar().showMessage('缩放')
 
     # Description: clip actions
     def clip_cohen_sutherland_action(self):
         self.canvas_widget.start_clip('clip','Cohen-Sutherland')
-        self.statusBar().showMessage('Cohen-Sutherland算法裁剪线段')
+        # self.statusBar().showMessage('Cohen-Sutherland算法裁剪线段')
 
     def clip_liang_barsky_action(self):
         self.canvas_widget.start_clip('clip','Liang-Barsky')
-        self.statusBar().showMessage('Liang-Barsky算法裁剪线段')
+        # self.statusBar().showMessage('Liang-Barsky算法裁剪线段')
+
+
+    def updateUI(self, old, new, algorithm):
+        self.line_naive_btn                 .setChecked(False)
+        self.line_dda_btn                   .setChecked(False)
+        self.line_bresenham_btn             .setChecked(False)
+        self.polygon_dda_btn                .setChecked(False)
+        self.polygon_bresenham_btn          .setChecked(False)
+        self.ellipse_btn					.setChecked(False)
+        self.curve_bezier_btn				.setChecked(False)
+        self.curve_b_spline_btn				.setChecked(False)
+        self.translate_btn					.setChecked(False)
+        self.rotate_btn						.setChecked(False)
+        self.scale_btn						.setChecked(False)
+        self.clip_cohen_sutherland_btn      .setChecked(False)
+        self.clip_liang_barsky_btn          .setChecked(False)
+        
+        if new == '':
+            message = '空闲'
+        elif new == 'line':
+            message = algorithm + '算法绘制线段'
+            if algorithm == 'Naive':
+                self.line_naive_btn                 .setChecked(True)
+            elif algorithm == 'DDA':
+                self.line_dda_btn                   .setChecked(True)
+            elif algorithm == 'Bresenham':
+                self.line_bresenham_btn             .setChecked(True)
+        elif new == 'polygon':
+            message = algorithm + '算法绘制多边形'
+            if algorithm == 'DDA':
+                self.polygon_dda_btn                   .setChecked(True)
+            elif algorithm == 'Bresenham':
+                self.polygon_bresenham_btn             .setChecked(True)
+        elif new == 'ellipse':
+            message = '中点圆算法绘制椭圆'
+            self.ellipse_btn					.setChecked(True)
+        elif new == 'curve':
+            message = algorithm + '算法绘制曲线'
+            if algorithm == 'Bezier':
+                self.curve_bezier_btn				.setChecked(True)
+            elif algorithm == 'B-spline':
+                self.curve_b_spline_btn				.setChecked(True)
+        elif new == 'translate':
+            message = '平移'
+            self.translate_btn					.setChecked(True)
+        elif new == 'rotate':
+            message = '旋转'
+            self.rotate_btn						.setChecked(True)
+        elif new == 'scale':
+            message = '缩放'
+            self.scale_btn						.setChecked(True)
+        elif new == 'clip':
+            message = algorithm + '裁剪线段'
+            if algorithm == 'Cohen-Sutherland':
+                self.clip_cohen_sutherland_btn      .setChecked(True)
+            elif algorithm == 'Liang-Barsky':
+                self.clip_liang_barsky_btn          .setChecked(True)
+        self.statusBar().showMessage(message)
+        
+            
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
