@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
     QLayout,
     QStyle,
     QSplashScreen,
+    QFileDialog,
     QStyleOptionGraphicsItem)
 from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap, QFontDatabase
 from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
@@ -584,8 +585,15 @@ QPushButton:hover:!pressed:!checked{
         self.list_widget.takeItem(self.list_widget.selectedIndexes()[0].row())
 
     def export_action(self):
-        filename = QFileDialog.getSaveFileName(self,'save file','/home/jm/study')
-        print("SHIt")
+        filename = QFileDialog.getSaveFileName(self,'导出当前画布', '.')
+        if filename[0]:
+            with open(filename[0], 'wt') as f:
+                for item in self.canvas_widget.item_dict.values():
+                    buf = 'draw' + item.item_type.capitalize() + ' '
+                    for p in item.p_list:
+                        buf += '%d %d ' % (p[0], p[1])
+                    buf += item.algorithm
+                f.write(buf + '\n')
 
     # Description: line actions
     def line_naive_action(self):
