@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-import sys
+import sys, time
 import math
 import cg_algorithms as alg
 from typing import Optional
@@ -25,8 +25,9 @@ from PyQt5.QtWidgets import (
     QFrame,
     QLayout,
     QStyle,
+    QSplashScreen,
     QStyleOptionGraphicsItem)
-from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon
+from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap
 from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
 
 
@@ -748,10 +749,38 @@ QPushButton:checked {
                 self.clip_liang_barsky_btn          .setChecked(True)
         self.statusBar().showMessage(message)
         
-            
+
+
+class SplashScreen(QSplashScreen):
+    def __init__(self):
+        super(SplashScreen, self).__init__(QPixmap("../asset/img/splash.png"))
+        self.steps = 20.0
+    def effect(self):
+        self.setWindowOpacity(0)
+        t = 0
+        while t <= self.steps:
+            newOpacity = self.windowOpacity() + 1/self.steps
+            if newOpacity > 1: break
+            self.setWindowOpacity(newOpacity)
+            self.show()
+            t -= 1
+            time.sleep(0.01)
+
+        time.sleep(1)
+        t = 0
+        while t <= self.steps:
+            newOpacity = self.windowOpacity() - 1/self.steps
+            if newOpacity < 0: break
+            self.setWindowOpacity(newOpacity)
+            t += 1
+            time.sleep(0.01)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    splash = SplashScreen()
+    splash.effect()
+    app.processEvents()
     mw = MainWindow()
     mw.show()
+    splash.finish(mw)
     sys.exit(app.exec_())
