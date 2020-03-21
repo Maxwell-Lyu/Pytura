@@ -722,6 +722,7 @@ class SplashScreen(QSplashScreen):
             self.setWindowOpacity(newOpacity)
             t += 1
             time.sleep(0.01)
+        self.setWindowOpacity(0)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
