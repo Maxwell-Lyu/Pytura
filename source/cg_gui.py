@@ -736,9 +736,10 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage(message)
         
 class SplashScreen(QSplashScreen):
-    def __init__(self, image:str):
+    def __init__(self, image:str, steps = 10.0, duration = 1):
         super(SplashScreen, self).__init__(QPixmap(image))
-        self.steps = 20.0
+        self.steps = steps
+        self.duration = duration
     def effect(self):
         self.setWindowOpacity(0)
         t = 0
@@ -750,7 +751,7 @@ class SplashScreen(QSplashScreen):
             t -= 1
             time.sleep(0.01)
 
-        time.sleep(1)
+        time.sleep(self.duration)
         t = 0
         while t <= self.steps:
             newOpacity = self.windowOpacity() - 1/self.steps
