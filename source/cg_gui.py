@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import (
     QStyle,
     QSplashScreen,
     QStyleOptionGraphicsItem)
-from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap
+from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap, QFontDatabase
 from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
 import ctypes
 class MyCanvas(QGraphicsView):
@@ -338,19 +338,7 @@ class MainWindow(QMainWindow):
     """
     主窗口类
     """
-    styleSheet = """
-QWidget{
-    background: #212121;
-    color: #ffffff;
-    border-color: #ffffff;
-    padding: 0 0 0 0;
-    margin: 0 0 0 0;
-	outline: none;
-
-}
-QGraphicsView{
-    background: #ffffff;
-}
+    centralStyleSheet = """
 QPushButton{
     icon-size: 32px;
     max-width:  40px;
@@ -359,22 +347,46 @@ QPushButton{
     min-height: 40px;
     margin: 0px 0px 6px 0px;
 	border-width: 4px;
-    border-image: url(asset/img/btn_default.png) 4 stretch;
+    border-image: url(asset/img/tool_default.png) 4 stretch;
 
 }
 QPushButton:pressed{
-    border-image: url(asset/img/btn_pressed.png) 4 stretch;
+    border-image: url(asset/img/tool_pressed.png) 4 stretch;
 }
 QPushButton:hover:!pressed:!checked{
-    border-image: url(asset/img/btn_hover.png) 4 stretch;
+    border-image: url(asset/img/tool_hover.png) 4 stretch;
 }
 QPushButton:checked {
-    border-image: url(asset/img/btn_checked.png) 4 stretch;
-}
-QListWidgetItem {
+    border-image: url(asset/img/tool_checked.png) 4 stretch;
+}   
+QGraphicsView{
+    background: #ffffff;
 }
 QListWidget {
     icon-size: 24px;
+}
+    """
+    styleSheet = """
+QWidget{
+    background: #212121;
+    color: #ffffff;
+    border-color: #ffffff;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+	outline: none;
+    font-family: 'Sarasa UI SC Semibold'
+}
+QPushButton{
+    min-height: 24px;
+    min-width: 96px;
+    border-width: 0 8px 0 8px;
+    border-image: url(asset/img/btn_default.png) 8 stretch;
+}
+QPushButton:pressed{
+    border-image: url(asset/img/btn_pressed.png) 8 stretch;
+}
+QPushButton:hover:!pressed:!checked{
+    border-image: url(asset/img/btn_hover.png) 8 stretch;
 }
     """
 # QPushButton:checked:hover {
@@ -388,6 +400,7 @@ QListWidget {
 # }
     def __init__(self):
         super().__init__()
+        QFontDatabase.addApplicationFont("asset/font/sarasa-semibold.ttc")
         self.setStyleSheet(self.styleSheet)
         self.item_cnt = 0
         # 使用QListWidget来记录已有的图元，并用于选择图元。注：这是图元选择的简单实现方法，更好的实现是在画布中直接用鼠标选择图元
@@ -427,6 +440,7 @@ QListWidget {
         )
         self.delete_btn                     = QPushButton(QIcon('asset/icon/delete.svg'), '')
         self.reset_canvas_btn               = QPushButton(QIcon('asset/icon/reset_canvas.svg'), '')
+        self.export_btn                     = QPushButton(QIcon('asset/icon/export.svg'), '')
         self.exit_btn                       = QPushButton(QIcon('asset/icon/exit.svg'), '')
         self.line_naive_btn                 = QPushButton(QIcon('asset/icon/line_naive.svg'), '')
         self.line_dda_btn                   = QPushButton(QIcon('asset/icon/line_dda.svg'), '')
@@ -443,6 +457,7 @@ QListWidget {
         self.clip_liang_barsky_btn          = QPushButton(QIcon('asset/icon/clip_liang_barsky.svg'), '')
         self.delete_btn                     .setToolTip('删除选中图元')
         self.reset_canvas_btn               .setToolTip('重置画布')
+        self.export_btn                     .setToolTip('导出')
         self.exit_btn                       .setToolTip('退出')
         self.line_naive_btn                 .setToolTip('Naive算法绘制线段')
         self.line_dda_btn                   .setToolTip('DDA算法绘制线段')
@@ -482,7 +497,7 @@ QListWidget {
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout2.addWidget(line)
         vbox_layout2.addWidget(self.curve_bezier_btn		        )
         vbox_layout2.addWidget(self.curve_b_spline_btn		    )
-        vbox_layout2.addWidget(self.set_pen_btn                  )
+        vbox_layout2.addWidget(self.set_pen_btn                 )
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(linme)
         vbox_layout1.addWidget(self.translate_btn			    )
         vbox_layout1.addWidget(self.rotate_btn				    )
@@ -492,12 +507,14 @@ QListWidget {
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout1.addWidget(line)
         vbox_layout1.addWidget(self.delete_btn                   )
         vbox_layout1.addWidget(self.reset_canvas_btn             )
+        vbox_layout1.addWidget(self.export_btn                   )
         vbox_layout1.addWidget(self.exit_btn                     )
         ## Slots
         self.set_pen_btn                    .clicked.connect(self.set_pen_action              )
         self.delete_btn                     .clicked.connect(self.delete_action               )
         self.reset_canvas_btn               .clicked.connect(self.reset_canvas_action         )
         self.exit_btn                       .clicked.connect(qApp.quit                        )
+        self.export_btn                     .clicked.connect(self.export_action               )
         self.line_naive_btn                 .clicked.connect(self.line_naive_action           )
         self.line_dda_btn                   .clicked.connect(self.line_dda_action             )
         self.line_bresenham_btn             .clicked.connect(self.line_bresenham_action       )
@@ -524,6 +541,7 @@ QListWidget {
         self.hbox_layout.addWidget(self.list_widget, stretch=1)
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.hbox_layout)
+        self.central_widget.setStyleSheet(self.centralStyleSheet)
         self.setCentralWidget(self.central_widget)
         self.statusBar().showMessage('空闲')
         self.resize(600, 600)
@@ -539,7 +557,7 @@ QListWidget {
 
     # Description: file actions
     def set_pen_action(self):
-        color = QColorDialog.getColor()
+        color = QColorDialog.getColor(self.canvas_widget.pen_color, self, '选择绘图颜色')
         self.canvas_widget.pen_color = color
         self.set_pen_btn.setStyleSheet('background: rgb(%d,%d,%d); \n %s' % (color.red(), color.green(), color.blue(), 
         """  
@@ -564,6 +582,10 @@ QListWidget {
     def delete_action(self):
         self.canvas_widget.delete_selection()
         self.list_widget.takeItem(self.list_widget.selectedIndexes()[0].row())
+
+    def export_action(self):
+        filename = QFileDialog.getSaveFileName(self,'save file','/home/jm/study')
+        print("SHIt")
 
     # Description: line actions
     def line_naive_action(self):
