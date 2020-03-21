@@ -575,8 +575,8 @@ QPushButton:checked {
         self.setCentralWidget(self.central_widget)
         self.statusBar().showMessage('空闲')
         self.resize(600, 600)
-        self.setWindowTitle('CG Demo')
-
+        self.setWindowTitle('Pytura')
+        self.setWindowIcon(QIcon('../asset/icon/pytura.ico'))
         # tool_widget = QWidget()
         # tool_layout = QVBoxLayout()
         # self.hbox_layout.addWidget(tool_widget)
