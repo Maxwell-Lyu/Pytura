@@ -389,6 +389,40 @@ class MainWindow(QMainWindow):
     QPushButton:hover:!pressed:!checked{
         border-image: url(asset/img/btn_hover.png) 8 stretch;
     }
+    QSpinBox {
+        background: #212121;
+        border-style: solid;
+        border-color: black;
+        border-width: 1px;
+    }
+    QSpinBox::up-button {
+        background-image: url(asset/img/up_default.png);
+    }
+    QSpinBox::up-button:hover:!pressed {
+        background-image: url(asset/img/up_hover.png);
+    }
+    QSpinBox::up-button:pressed {
+        background-image: url(asset/img/up_pressed.png);
+    }
+    QSpinBox::down-button {
+        background-image: url(asset/img/down_default.png);
+    }
+    QSpinBox::down-button:hover:!pressed {
+        background-image: url(asset/img/down_hover.png);
+    }
+    QSpinBox::down-button:pressed {
+        background-image: url(asset/img/down_pressed.png);
+    }
+    QLineEdit {
+        border-style: solid;
+        border-width: 1px;
+        border-color: black;
+    }
+    QSlider {
+        border-style: solid;
+        border-width: 10px;
+        border-color: green;
+    }
     """
 
     def __init__(self):
