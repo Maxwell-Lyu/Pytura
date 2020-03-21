@@ -29,7 +29,7 @@ from PyQt5.QtWidgets import (
     QSplashScreen,
     QFileDialog,
     QStyleOptionGraphicsItem)
-from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap, QFontDatabase
+from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap, QFontDatabase, QImage
 from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
 import ctypes
 class MyCanvas(QGraphicsView):
@@ -441,6 +441,7 @@ QPushButton:hover:!pressed:!checked{
         )
         self.delete_btn                     = QPushButton(QIcon('asset/icon/delete.svg'), '')
         self.reset_canvas_btn               = QPushButton(QIcon('asset/icon/reset_canvas.svg'), '')
+        self.save_btn                       = QPushButton(QIcon('asset/icon/save.svg'), '')
         self.export_btn                     = QPushButton(QIcon('asset/icon/export.svg'), '')
         self.exit_btn                       = QPushButton(QIcon('asset/icon/exit.svg'), '')
         self.line_naive_btn                 = QPushButton(QIcon('asset/icon/line_naive.svg'), '')
@@ -458,7 +459,8 @@ QPushButton:hover:!pressed:!checked{
         self.clip_liang_barsky_btn          = QPushButton(QIcon('asset/icon/clip_liang_barsky.svg'), '')
         self.delete_btn                     .setToolTip('删除选中图元')
         self.reset_canvas_btn               .setToolTip('重置画布')
-        self.export_btn                     .setToolTip('导出')
+        self.save_btn                     .setToolTip('保存为图片')
+        self.export_btn                     .setToolTip('导出为图元命令')
         self.exit_btn                       .setToolTip('退出')
         self.line_naive_btn                 .setToolTip('Naive算法绘制线段')
         self.line_dda_btn                   .setToolTip('DDA算法绘制线段')
@@ -508,14 +510,16 @@ QPushButton:hover:!pressed:!checked{
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout1.addWidget(line)
         vbox_layout1.addWidget(self.delete_btn                   )
         vbox_layout1.addWidget(self.reset_canvas_btn             )
+        vbox_layout1.addWidget(self.save_btn                     )
         vbox_layout1.addWidget(self.export_btn                   )
         vbox_layout1.addWidget(self.exit_btn                     )
         ## Slots
         self.set_pen_btn                    .clicked.connect(self.set_pen_action              )
         self.delete_btn                     .clicked.connect(self.delete_action               )
         self.reset_canvas_btn               .clicked.connect(self.reset_canvas_action         )
-        self.exit_btn                       .clicked.connect(qApp.quit                        )
+        self.save_btn                       .clicked.connect(self.save_action               )
         self.export_btn                     .clicked.connect(self.export_action               )
+        self.exit_btn                       .clicked.connect(qApp.quit                        )
         self.line_naive_btn                 .clicked.connect(self.line_naive_action           )
         self.line_dda_btn                   .clicked.connect(self.line_dda_action             )
         self.line_bresenham_btn             .clicked.connect(self.line_bresenham_action       )
@@ -587,13 +591,25 @@ QPushButton:hover:!pressed:!checked{
     def export_action(self):
         filename = QFileDialog.getSaveFileName(self,'导出当前画布', '.')
         if filename[0]:
+            buf = 'resetCanvas 600 600\n'
             with open(filename[0], 'wt') as f:
                 for item in self.canvas_widget.item_dict.values():
-                    buf = 'draw' + item.item_type.capitalize() + ' '
+                    buf += 'setColor %d %d %d\n' % (item.color.red(), item.color.green(), item.color.blue())
+                    buf += 'draw' + item.item_type.capitalize() + ' ' + item.id + ' ' 
                     for p in item.p_list:
                         buf += '%d %d ' % (p[0], p[1])
-                    buf += item.algorithm
-                f.write(buf + '\n')
+                    buf += item.algorithm + '\n'
+                buf += 'saveCanvas 1'
+                f.write(buf)
+
+    def save_action(self):
+        image = QImage(600, 600, QImage.Format_ARGB32_Premultiplied)
+        painter = QPainter(image)
+        self.scene.render(painter, QRectF(image.rect()), self.scene.sceneRect())
+        painter.end()
+        filename = QFileDialog.getSaveFileName(self,'导出当前画布', '.', '便携式网络图形(*.png)')
+        if filename[0]:
+            image.save(filename[0])
 
     # Description: line actions
     def line_naive_action(self):
