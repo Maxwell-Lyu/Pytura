@@ -29,8 +29,7 @@ from PyQt5.QtWidgets import (
     QStyleOptionGraphicsItem)
 from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap
 from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
-
-
+import ctypes
 class MyCanvas(QGraphicsView):
     """
     画布窗体类，继承自QGraphicsView，采用QGraphicsView、QGraphicsScene、QGraphicsItem的绘图框架
@@ -359,17 +358,17 @@ QPushButton{
     min-height: 40px;
     margin: 0px 0px 6px 0px;
 	border-width: 4px;
-    border-image: url(../asset/img/btn_default.png) 4 stretch;
+    border-image: url(asset/img/btn_default.png) 4 stretch;
 
 }
 QPushButton:pressed{
-    border-image: url(../asset/img/btn_pressed.png) 4 stretch;
+    border-image: url(asset/img/btn_pressed.png) 4 stretch;
 }
 QPushButton:hover:!pressed:!checked{
-    border-image: url(../asset/img/btn_hover.png) 4 stretch;
+    border-image: url(asset/img/btn_hover.png) 4 stretch;
 }
 QPushButton:checked {
-    border-image: url(../asset/img/btn_checked.png) 4 stretch;
+    border-image: url(asset/img/btn_checked.png) 4 stretch;
 }
     """
 # QPushButton:checked:hover {
@@ -406,7 +405,7 @@ QPushButton:checked {
         vbox_layout2.setSpacing(0)
         vbox_layout2.setAlignment(Qt.AlignTop)
         ## Tool Btn
-        self.set_pen_btn                    = QPushButton(QIcon('../asset/icon/set_pen.svg'), '')
+        self.set_pen_btn                    = QPushButton(QIcon('asset/icon/set_pen.svg'), '')
         self.set_pen_btn.setStyleSheet("""  
             max-width:  40px;
             max-height: 40px;
@@ -420,22 +419,22 @@ QPushButton:checked {
             border-image: none;
             """
         )
-        self.delete_btn                     = QPushButton(QIcon('../asset/icon/delete.svg'), '')
-        self.reset_canvas_btn               = QPushButton(QIcon('../asset/icon/reset_canvas.svg'), '')
-        self.exit_btn                       = QPushButton(QIcon('../asset/icon/exit.svg'), '')
-        self.line_naive_btn                 = QPushButton(QIcon('../asset/icon/line_naive.svg'), '')
-        self.line_dda_btn                   = QPushButton(QIcon('../asset/icon/line_dda.svg'), '')
-        self.line_bresenham_btn             = QPushButton(QIcon('../asset/icon/line_bresenham.svg'), '')
-        self.polygon_dda_btn                = QPushButton(QIcon('../asset/icon/polygon_dda.svg'), '')
-        self.polygon_bresenham_btn          = QPushButton(QIcon('../asset/icon/polygon_bresenham.svg'), '')
-        self.ellipse_btn					= QPushButton(QIcon('../asset/icon/ellipse.svg'), '')
-        self.curve_bezier_btn				= QPushButton(QIcon('../asset/icon/curve_bezier.svg'), '')
-        self.curve_b_spline_btn				= QPushButton(QIcon('../asset/icon/curve_b_spline.svg'), '')
-        self.translate_btn					= QPushButton(QIcon('../asset/icon/translate.svg'), '')
-        self.rotate_btn						= QPushButton(QIcon('../asset/icon/rotate.svg'), '')
-        self.scale_btn						= QPushButton(QIcon('../asset/icon/scale.svg'), '')
-        self.clip_cohen_sutherland_btn      = QPushButton(QIcon('../asset/icon/clip_cohen_sutherland.svg'), '')
-        self.clip_liang_barsky_btn          = QPushButton(QIcon('../asset/icon/clip_liang_barsky.svg'), '')
+        self.delete_btn                     = QPushButton(QIcon('asset/icon/delete.svg'), '')
+        self.reset_canvas_btn               = QPushButton(QIcon('asset/icon/reset_canvas.svg'), '')
+        self.exit_btn                       = QPushButton(QIcon('asset/icon/exit.svg'), '')
+        self.line_naive_btn                 = QPushButton(QIcon('asset/icon/line_naive.svg'), '')
+        self.line_dda_btn                   = QPushButton(QIcon('asset/icon/line_dda.svg'), '')
+        self.line_bresenham_btn             = QPushButton(QIcon('asset/icon/line_bresenham.svg'), '')
+        self.polygon_dda_btn                = QPushButton(QIcon('asset/icon/polygon_dda.svg'), '')
+        self.polygon_bresenham_btn          = QPushButton(QIcon('asset/icon/polygon_bresenham.svg'), '')
+        self.ellipse_btn					= QPushButton(QIcon('asset/icon/ellipse.svg'), '')
+        self.curve_bezier_btn				= QPushButton(QIcon('asset/icon/curve_bezier.svg'), '')
+        self.curve_b_spline_btn				= QPushButton(QIcon('asset/icon/curve_b_spline.svg'), '')
+        self.translate_btn					= QPushButton(QIcon('asset/icon/translate.svg'), '')
+        self.rotate_btn						= QPushButton(QIcon('asset/icon/rotate.svg'), '')
+        self.scale_btn						= QPushButton(QIcon('asset/icon/scale.svg'), '')
+        self.clip_cohen_sutherland_btn      = QPushButton(QIcon('asset/icon/clip_cohen_sutherland.svg'), '')
+        self.clip_liang_barsky_btn          = QPushButton(QIcon('asset/icon/clip_liang_barsky.svg'), '')
         self.delete_btn                     .setToolTip('删除选中图元')
         self.reset_canvas_btn               .setToolTip('重置画布')
         self.exit_btn                       .setToolTip('退出')
@@ -560,7 +559,7 @@ QPushButton:checked {
         clip_cohen_sutherland_act.triggered.connect(self.clip_cohen_sutherland_action)
         clip_liang_barsky_act.triggered.connect(self.clip_liang_barsky_action)
         """
-        # self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
+        self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
         self.canvas_widget.statusChanged.connect(self.updateUI)
 
         # 设置主窗口的布局
@@ -576,7 +575,8 @@ QPushButton:checked {
         self.statusBar().showMessage('空闲')
         self.resize(600, 600)
         self.setWindowTitle('Pytura')
-        self.setWindowIcon(QIcon('../asset/icon/pytura.ico'))
+        self.setWindowIcon(QIcon('asset/icon/pytura.ico'))
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")    
         # tool_widget = QWidget()
         # tool_layout = QVBoxLayout()
         # self.hbox_layout.addWidget(tool_widget)
@@ -753,7 +753,7 @@ QPushButton:checked {
 
 class SplashScreen(QSplashScreen):
     def __init__(self):
-        super(SplashScreen, self).__init__(QPixmap("../asset/img/splash.png"))
+        super(SplashScreen, self).__init__(QPixmap("asset/img/splash.png"))
         self.steps = 20.0
     def effect(self):
         self.setWindowOpacity(0)
