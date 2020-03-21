@@ -390,7 +390,7 @@ class MainWindow(QMainWindow):
         border-image: url(asset/img/btn_hover.png) 8 stretch;
     }
     """
-    
+
     def __init__(self):
         super().__init__()
         QFontDatabase.addApplicationFont("asset/font/sarasa-semibold.ttc")
@@ -735,11 +735,9 @@ class MainWindow(QMainWindow):
                 self.clip_liang_barsky_btn          .setChecked(True)
         self.statusBar().showMessage(message)
         
-
-
 class SplashScreen(QSplashScreen):
-    def __init__(self):
-        super(SplashScreen, self).__init__(QPixmap("asset/img/splash.png"))
+    def __init__(self, image:str):
+        super(SplashScreen, self).__init__(QPixmap(image))
         self.steps = 20.0
     def effect(self):
         self.setWindowOpacity(0)
@@ -764,7 +762,7 @@ class SplashScreen(QSplashScreen):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    splash = SplashScreen()
+    splash = SplashScreen("asset/img/splash.png")
     splash.effect()
     app.processEvents()
     mw = MainWindow()
