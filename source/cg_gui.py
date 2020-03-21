@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
     QGraphicsView,
     QGraphicsItem,
     QListWidget,
+    QListWidgetItem,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
@@ -40,18 +41,23 @@ class MyCanvas(QGraphicsView):
         self.statusChanged.emit(self.status, value, self.temp_algorithm)
         self.status = value
 
+    def addItem(self):
+        new_entry = QListWidgetItem(self.temp_item.__icon__(), self.temp_item.item_type.title() + '\t' + self.temp_id)
+        new_entry.setToolTip('选中该' + self.temp_item.item_type.title())
+        self.list_widget.addItem(new_entry)
+
     def __init__(self, *args):
         super().__init__(*args)
         self.setMouseTracking(True)
-        self.main_window = None
-        self.list_widget = None
+        self.main_window : MainWindow = None
+        self.list_widget : QListWidget = None
         self.item_dict = {}
         self.selected_id = ''
 
         self.status = ''
         self.temp_algorithm = ''
         self.temp_id = ''
-        self.temp_item = None
+        self.temp_item : MyItem = None
         self.temp_last_point = 0
 
         self.edit_data = []
@@ -86,7 +92,8 @@ class MyCanvas(QGraphicsView):
         self.set_status('')
         self.temp_last_point = 0
         self.item_dict[self.temp_id] = self.temp_item
-        self.list_widget.addItem(self.temp_id)
+        # self.list_widget.addItem(self.temp_id)
+        self.addItem()
         self.temp_item.isDirty = True
         self.temp_item.isTemp = False
         self.temp_id = ''
@@ -123,7 +130,8 @@ class MyCanvas(QGraphicsView):
             self.scene().removeItem(item)
             self.selected_id = ''
 
-    def selection_changed(self, selected):
+    def selection_changed(self, selected: str):
+        selected = selected.split('\t', 1)[1]
         self.main_window.statusBar().showMessage('图元选择： %s' % selected)
         if self.selected_id != '':
             self.item_dict[self.selected_id].selected = False
@@ -249,6 +257,27 @@ class MyItem(QGraphicsItem):
         self.isDirty = True
         self.isTemp = True
         self.color = color
+    
+    def __icon__(self) -> QIcon:
+        if self.item_type == 'line':
+            if self.algorithm == 'Naive':
+                return QIcon('asset/icon/line_naive.svg')
+            elif self.algorithm == 'DDA':
+                return QIcon('asset/icon/line_dda.svg')
+            elif self.algorithm == 'Bresenham':
+                return QIcon('asset/icon/line_bresenham.svg')
+        elif self.item_type == 'polygon':
+            if self.algorithm == 'DDA':
+                return QIcon('asset/icon/polygon_dda.svg')
+            elif self.algorithm == 'Bresenham':
+                return QIcon('asset/icon/polygon_bresenham.svg')
+        elif self.item_type == 'ellipse':
+            return QIcon('asset/icon/ellipse.svg')
+        elif self.item_type == 'curve':
+            if self.algorithm == 'Bezier':
+                return QIcon('asset/icon/curve_bezier.svg')
+            elif self.algorithm == 'B-spline':
+                return QIcon('asset/icon/curve_b_spline.svg')
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
         if self.isDirty:
@@ -341,6 +370,11 @@ QPushButton:hover:!pressed:!checked{
 }
 QPushButton:checked {
     border-image: url(asset/img/btn_checked.png) 4 stretch;
+}
+QListWidgetItem {
+}
+QListWidget {
+    icon-size: 24px;
 }
     """
 # QPushButton:checked:hover {
