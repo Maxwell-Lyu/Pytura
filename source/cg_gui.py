@@ -340,65 +340,57 @@ class MainWindow(QMainWindow):
     主窗口类
     """
     centralStyleSheet = """
-QPushButton{
-    icon-size: 32px;
-    max-width:  40px;
-    max-height: 40px;
-    min-width:  40px;
-    min-height: 40px;
-    margin: 0px 0px 6px 0px;
-	border-width: 4px;
-    border-image: url(asset/img/tool_default.png) 4 stretch;
+    QPushButton{
+        icon-size: 32px;
+        max-width:  40px;
+        max-height: 40px;
+        min-width:  40px;
+        min-height: 40px;
+        margin: 0px 0px 6px 0px;
+        border-width: 4px;
+        border-image: url(asset/img/tool_default.png) 4 stretch;
 
-}
-QPushButton:pressed{
-    border-image: url(asset/img/tool_pressed.png) 4 stretch;
-}
-QPushButton:hover:!pressed:!checked{
-    border-image: url(asset/img/tool_hover.png) 4 stretch;
-}
-QPushButton:checked {
-    border-image: url(asset/img/tool_checked.png) 4 stretch;
-}   
-QGraphicsView{
-    background: #ffffff;
-}
-QListWidget {
-    icon-size: 24px;
-}
+    }
+    QPushButton:pressed{
+        border-image: url(asset/img/tool_pressed.png) 4 stretch;
+    }
+    QPushButton:hover:!pressed:!checked{
+        border-image: url(asset/img/tool_hover.png) 4 stretch;
+    }
+    QPushButton:checked {
+        border-image: url(asset/img/tool_checked.png) 4 stretch;
+    }   
+    QGraphicsView{
+        background: #ffffff;
+    }
+    QListWidget {
+        icon-size: 24px;
+    }
     """
     styleSheet = """
-QWidget{
-    background: #212121;
-    color: #ffffff;
-    border-color: #ffffff;
-    padding: 0 0 0 0;
-    margin: 0 0 0 0;
-	outline: none;
-    font-family: 'Sarasa UI SC Semibold'
-}
-QPushButton{
-    min-height: 24px;
-    min-width: 96px;
-    border-width: 0 8px 0 8px;
-    border-image: url(asset/img/btn_default.png) 8 stretch;
-}
-QPushButton:pressed{
-    border-image: url(asset/img/btn_pressed.png) 8 stretch;
-}
-QPushButton:hover:!pressed:!checked{
-    border-image: url(asset/img/btn_hover.png) 8 stretch;
-}
+    QWidget{
+        background: #212121;
+        color: #ffffff;
+        border-color: #ffffff;
+        padding: 0 0 0 0;
+        margin: 0 0 0 0;
+        outline: none;
+        font-family: 'Sarasa UI SC Semibold'
+    }
+    QPushButton{
+        min-height: 24px;
+        min-width: 96px;
+        border-width: 0 8px 0 8px;
+        border-image: url(asset/img/btn_default.png) 8 stretch;
+    }
+    QPushButton:pressed{
+        border-image: url(asset/img/btn_pressed.png) 8 stretch;
+    }
+    QPushButton:hover:!pressed:!checked{
+        border-image: url(asset/img/btn_hover.png) 8 stretch;
+    }
     """
-# QPushButton:checked:hover {
-#     background: green;
-# }
-# QPushButton:checked:pressed {
-#     background: white;
-# }
-# QPushButton:checked {
-#     background: gray;
-# }
+    
     def __init__(self):
         super().__init__()
         QFontDatabase.addApplicationFont("asset/font/sarasa-semibold.ttc")
