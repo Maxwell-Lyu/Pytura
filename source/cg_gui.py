@@ -224,34 +224,6 @@ class MyCanvas(QGraphicsView):
         elif self.status == 'curve' and self.temp_item and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
         super().mouseDoubleClickEvent(event)
-        
-    """
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        pos = self.mapToScene(event.localPos().toPoint())
-        x = int(pos.x())
-        y = int(pos.y())
-        if self.status == 'line':
-            self.temp_item = MyItem(self.temp_id, self.status, [[x, y], [x, y]], self.temp_algorithm)
-            self.scene().addItem(self.temp_item)
-        self.updateScene([self.sceneRect()])
-        super().mousePressEvent(event)
-
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        pos = self.mapToScene(event.localPos().toPoint())
-        x = int(pos.x())
-        y = int(pos.y())
-        if self.status == 'line':
-            self.temp_item.p_list[1] = [x, y]
-        self.updateScene([self.sceneRect()])
-        super().mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if self.status == 'line':
-            self.item_dict[self.temp_id] = self.temp_item
-            self.list_widget.addItem(self.temp_id)
-            self.finish_draw()
-        super().mouseReleaseEvent(event)
-    """
 
 
 class MyItem(QGraphicsItem):
@@ -506,59 +478,6 @@ QPushButton:checked {
         self.clip_cohen_sutherland_btn      .clicked.connect(self.clip_cohen_sutherland_action)
         self.clip_liang_barsky_btn          .clicked.connect(self.clip_liang_barsky_action    )
 
-        # toolBar.setLayout(vbox_layout)
-        """
-        # 设置菜单栏
-        menubar = self.menuBar()
-        file_menu = menubar.addMenu('文件')
-        set_pen_act = file_menu.addAction('设置画笔')
-        reset_canvas_act = file_menu.addAction('重置画布')
-        exit_act = file_menu.addAction('退出')
-        draw_menu = menubar.addMenu('绘制')
-        line_menu = draw_menu.addMenu('线段')
-        line_naive_act = line_menu.addAction('Naive')
-        line_dda_act = line_menu.addAction('DDA')
-        line_bresenham_act = line_menu.addAction('Bresenham')
-        polygon_menu = draw_menu.addMenu('多边形')
-        polygon_dda_act = polygon_menu.addAction('DDA')
-        polygon_bresenham_act = polygon_menu.addAction('Bresenham')
-        ellipse_act = draw_menu.addAction('椭圆')
-        curve_menu = draw_menu.addMenu('曲线')
-        curve_bezier_act = curve_menu.addAction('Bezier')
-        curve_b_spline_act = curve_menu.addAction('B-spline')
-        edit_menu = menubar.addMenu('编辑')
-        translate_act = edit_menu.addAction('平移')
-        rotate_act = edit_menu.addAction('旋转')
-        scale_act = edit_menu.addAction('缩放')
-        clip_menu = edit_menu.addMenu('裁剪')
-        clip_cohen_sutherland_act = clip_menu.addAction('Cohen-Sutherland')
-        clip_liang_barsky_act = clip_menu.addAction('Liang-Barsky')
-
-        # 连接信号和槽函数
-        # Description: file actions
-        set_pen_act.triggered.connect(self.set_pen_action)
-        reset_canvas_act.triggered.connect(self.reset_canvas_action)
-        exit_act.triggered.connect(qApp.quit)
-        # Description: line actions
-        line_naive_act.triggered.connect(self.line_naive_action)
-        line_dda_act.triggered.connect(self.line_dda_action)
-        line_bresenham_act.triggered.connect(self.line_bresenham_action)
-        # Description: polygon actions
-        polygon_dda_act.triggered.connect(self.polygon_dda_action)
-        polygon_bresenham_act.triggered.connect(self.polygon_bresenham_action)
-        # Description: ellipse actions
-        ellipse_act.triggered.connect(self.ellipse_action)
-        # Description: curve actions
-        curve_bezier_act.triggered.connect(self.curve_bezier_action)
-        curve_b_spline_act.triggered.connect(self.curve_b_spline_action)
-        # Description: edit actions
-        translate_act.triggered.connect(self.translate_action)
-        rotate_act.triggered.connect(self.rotate_action)
-        scale_act.triggered.connect(self.scale_action)
-        # Description: clip actions
-        clip_cohen_sutherland_act.triggered.connect(self.clip_cohen_sutherland_action)
-        clip_liang_barsky_act.triggered.connect(self.clip_liang_barsky_action)
-        """
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
         self.canvas_widget.statusChanged.connect(self.updateUI)
 
@@ -578,12 +497,6 @@ QPushButton:checked {
         self.setWindowIcon(QIcon('asset/icon/pytura.ico'))
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
         self.list_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # tool_widget = QWidget()
-        # tool_layout = QVBoxLayout()
-        # self.hbox_layout.addWidget(tool_widget)
-        # self.btn = QPushButton('test')
-        # tool_layout.addWidget(self.btn)
-        # tool_widget.setLayout(tool_layout)
 
     def get_id(self):
         _id = str(self.item_cnt)
