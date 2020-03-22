@@ -800,10 +800,17 @@ class MainWindow(QMainWindow):
             self.delete_btn                     .setDisabled(True)
         else:
             self.translate_btn					.setDisabled(False)
-            self.rotate_btn						.setDisabled(False)
+            if self.canvas_widget.item_dict[self.canvas_widget.selected_id].item_type == 'ellipse':
+                self.rotate_btn						.setDisabled(True)
+            else:
+                self.rotate_btn						.setDisabled(False)
             self.scale_btn						.setDisabled(False)
-            self.clip_cohen_sutherland_btn      .setDisabled(False)
-            self.clip_liang_barsky_btn          .setDisabled(False)
+            if self.canvas_widget.item_dict[self.canvas_widget.selected_id].item_type == 'line':
+                self.clip_cohen_sutherland_btn      .setDisabled(False)
+                self.clip_liang_barsky_btn          .setDisabled(False)
+            else:
+                self.clip_cohen_sutherland_btn      .setDisabled(True)
+                self.clip_liang_barsky_btn          .setDisabled(True)
             self.delete_btn                     .setDisabled(False)
         if new == '':
             message = '空闲'
