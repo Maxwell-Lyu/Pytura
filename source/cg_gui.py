@@ -207,6 +207,7 @@ class MyCanvas(QGraphicsView):
                 self.main_window.list_widget.setCurrentItem(self.item_dict[self.selected_id].entry)
                 self.item_dict[self.selected_id].selected = True
             else:
+                self.main_window.list_widget.clearSelection()
                 self.selected_id = ''
         elif self.status == 'translate' or self.status == 'rotate':
             self.edit_data = [[x, y], [x, y]]
