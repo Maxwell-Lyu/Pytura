@@ -193,7 +193,9 @@ class MyCanvas(QGraphicsView):
         x = int(pos.x())
         y = int(pos.y())
         if self.status == '':
-            if self.selected_id: self.item_dict[self.selected_id].selected = False
+            if self.selected_id: 
+                self.item_dict[self.selected_id].selected = False
+                self.item_dict[self.selected_id].update()
             if len(self.main_window.canvas_widget.items(QPoint(x, y))):
                 self.selected_id = self.main_window.canvas_widget.items(QPoint(x, y))[0].id
                 self.main_window.list_widget.setCurrentItem(self.item_dict[self.selected_id].entry)
