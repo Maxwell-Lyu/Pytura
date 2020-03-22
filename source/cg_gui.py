@@ -645,8 +645,10 @@ class MainWindow(QMainWindow):
         self.item_cnt = 0
 
     def delete_action(self):
-        self.log_widget.do('delete', self.canvas_widget.delete_selection())
-        self.list_widget.takeItem(self.list_widget.selectedIndexes()[0].row())
+        if self.canvas_widget.selected_id != '':
+            item = self.canvas_widget.delete_selection()
+            if item: self.log_widget.do('delete', item)
+            self.list_widget.takeItem(self.list_widget.selectedIndexes()[0].row())
 
     def export_action(self):
         filename = QFileDialog.getSaveFileName(self,'导出当前画布', '.')
@@ -821,13 +823,13 @@ class LogItem():
         self.color = item.color
         self.op = op
         if op == 'draw':
-            self.icon = QIcon('asset/icon/delete.svg')
+            self.icon = QIcon('asset/icon/log_draw.svg')
             self.msg = '绘制图元'
         elif op == 'delete':
-            self.icon = QIcon('asset/icon/delete.svg')
+            self.icon = QIcon('asset/icon/log_delete.svg')
             self.msg = '删除图元'
         elif op == 'edit':
-            self.icon = QIcon('asset/icon/delete.svg')
+            self.icon = QIcon('asset/icon/log_edit.svg')
             self.msg = '变换图元'
         self.msg += ' '+ self.id
 
