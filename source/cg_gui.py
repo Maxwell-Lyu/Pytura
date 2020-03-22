@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
     QFrame,
     QLayout,
     QStyle,
+    QMessageBox,
     QSplashScreen,
     QFileDialog,
     QStyleOptionGraphicsItem)
@@ -581,9 +582,12 @@ class MainWindow(QMainWindow):
         vbox_layout1.addWidget(self.clip_liang_barsky_btn        )
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout1.addWidget(line)
         vbox_layout1.addWidget(self.delete_btn                   )
-        vbox_layout1.addWidget(self.reset_canvas_btn             )
         vbox_layout1.addWidget(self.save_btn                     )
         vbox_layout1.addWidget(self.export_btn                   )
+        place_holder = QWidget()
+        place_holder.setFixedSize(32, 32)
+        vbox_layout1.addWidget(place_holder                      )
+        vbox_layout1.addWidget(self.reset_canvas_btn             )
         vbox_layout1.addWidget(self.exit_btn                     )
 
         hbox_layout3.addWidget(self.undo_btn                     )
@@ -594,7 +598,7 @@ class MainWindow(QMainWindow):
         self.reset_canvas_btn               .clicked.connect(self.reset_canvas_action         )
         self.save_btn                       .clicked.connect(self.save_action                 )
         self.export_btn                     .clicked.connect(self.export_action               )
-        self.exit_btn                       .clicked.connect(qApp.quit                        )
+        self.exit_btn                       .clicked.connect(self.exit_action                 )
         self.undo_btn                       .clicked.connect(self.undo_action                 )
         self.redo_btn                       .clicked.connect(self.redo_action                 )
         self.line_naive_btn                 .clicked.connect(self.line_naive_action           )
@@ -658,14 +662,15 @@ class MainWindow(QMainWindow):
         )
 
     def reset_canvas_action(self):
-        self.canvas_widget.clear_selection()
-        self.scene.clear()
-        self.list_widget.clear()
-        self.canvas_widget.item_dict.clear()
-        self.log_widget.clear()
-        self.log_widget.item_list.clear()
-        self.log_widget.item_ptr = -1
-        self.item_cnt = 0
+        if QMessageBox.question(self,'重置画布', "您确认要重置画布吗？\n该修改不可撤销！", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            self.canvas_widget.clear_selection()
+            self.scene.clear()
+            self.list_widget.clear()
+            self.canvas_widget.item_dict.clear()
+            self.log_widget.clear()
+            self.log_widget.item_list.clear()
+            self.log_widget.item_ptr = -1
+            self.item_cnt = 0
 
     def delete_action(self):
         if self.canvas_widget.selected_id != '':
@@ -696,6 +701,10 @@ class MainWindow(QMainWindow):
         if filename[0]:
             image.save(filename[0])
     
+    def exit_action(self):
+        if QMessageBox.question(self,'退出', "您确认要退出吗？\n未保存的修改将丢失！", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+            qApp.quit()
+
     def undo_action(self):
         self.log_widget.undo()
 
