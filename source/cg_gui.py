@@ -152,11 +152,12 @@ class MyCanvas(QGraphicsView):
         self.updateScene([self.sceneRect()])
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        if self.status == '':
-            return
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
+        self.main_window.status_label.setText('位置: (%d, %d) ' % (x, y))
+        if self.status == '':
+            return
         if self.status == 'translate' and len(self.edit_data):
             self.edit_data[1] = [x, y]
             dx = self.edit_data[1][0] - self.edit_data[0][0]
@@ -544,6 +545,9 @@ class MainWindow(QMainWindow):
         self.redo_btn.setStyleSheet(self.styleSheet)
 
 
+        self.status_label = QLabel()
+        self.statusBar().addPermanentWidget(self.status_label)
+
         vbox_layout4.addWidget(self.list_widget)
         vbox_layout4.addLayout(hbox_layout3)
         vbox_layout4.addWidget(self.log_widget)
@@ -614,7 +618,7 @@ class MainWindow(QMainWindow):
         self.central_widget.setLayout(self.hbox_layout)
         self.central_widget.setStyleSheet(self.centralStyleSheet)
         self.setCentralWidget(self.central_widget)
-        self.statusBar().showMessage('空闲')
+        # self.statusBar().showMessage('空闲')
         self.resize(600, 600)
         self.setWindowTitle('Pytura')
         self.setWindowIcon(QIcon('asset/icon/pytura.ico'))
@@ -820,7 +824,7 @@ class MainWindow(QMainWindow):
             elif algorithm == 'Liang-Barsky':
                 self.clip_liang_barsky_btn          .setChecked(True)
         self.statusBar().showMessage(message)
-        
+        # self.status_label.setText(message)
 
 class LogItem():
     def __init__(self, parent=None, item: MyItem = None, old_p_list:list = None, op: str = ''):
