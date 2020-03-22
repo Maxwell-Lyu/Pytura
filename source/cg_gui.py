@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import (
     QStyle,
     QMessageBox,
     QSplashScreen,
+    QLineEdit,
     QFileDialog,
     QStyleOptionGraphicsItem)
 from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap, QFontDatabase, QImage
@@ -404,6 +405,7 @@ class MainWindow(QMainWindow):
         margin: 0 -4px 0 -4px;
         icon-size: 24px;
         min-height: 24px;
+        max-height: 24px;
         min-width: 96px;
         border-width: 0 8px 0 8px;
         border-image: url(asset/img/btn_default.png) 8 stretch;
@@ -477,7 +479,10 @@ class MainWindow(QMainWindow):
         vbox_layout2.setSpacing(0)
         vbox_layout2.setAlignment(Qt.AlignTop)
         vbox_layout4 = QVBoxLayout()
+        hbox_layout5 = QHBoxLayout()
         hbox_layout3 = QHBoxLayout()
+        vbox_layout6 = QVBoxLayout()
+
         # vbox_layout4.setSpacing(0)
         # vbox_layout4.setAlignment(Qt.AlignTop)
         
@@ -515,7 +520,9 @@ class MainWindow(QMainWindow):
         self.rotate_btn						= QPushButton(QIcon('asset/icon/rotate.svg'), '')
         self.scale_btn						= QPushButton(QIcon('asset/icon/scale.svg'), '')
         self.clip_cohen_sutherland_btn      = QPushButton(QIcon('asset/icon/clip_cohen_sutherland.svg'), '')
-        self.clip_liang_barsky_btn          = QPushButton(QIcon('asset/icon/clip_liang_barsky.svg'), '')
+        self.clip_liang_barsky_btn          = QPushButton(QIcon('asset/icon/clip_liang_barsky.svg'), '')    
+        self.push_btn                       = QPushButton(QIcon('asset/icon/push.svg'), '')
+        self.pull_btn                       = QPushButton(QIcon('asset/icon/pull.svg'), '')
         self.delete_btn                     .setToolTip('删除选中图元')
         self.reset_canvas_btn               .setToolTip('重置画布')
         self.save_btn                       .setToolTip('保存为图片')
@@ -536,6 +543,8 @@ class MainWindow(QMainWindow):
         self.scale_btn						.setToolTip('缩放')
         self.clip_cohen_sutherland_btn      .setToolTip('Cohen-Sutherland算法裁剪线段')
         self.clip_liang_barsky_btn          .setToolTip('Liang-Barsky算法裁剪线段')
+        self.push_btn                       .setToolTip('将命令添加为图元')
+        self.pull_btn                       .setToolTip('将选中图元解析为命令')
         self.line_naive_btn                 .setCheckable(True)
         self.line_dda_btn                   .setCheckable(True)
         self.line_bresenham_btn             .setCheckable(True)
@@ -553,10 +562,23 @@ class MainWindow(QMainWindow):
 
         self.undo_btn.setStyleSheet(self.styleSheet)
         self.redo_btn.setStyleSheet(self.styleSheet)
+        self.push_btn.setStyleSheet(self.styleSheet)
+        self.pull_btn.setStyleSheet(self.styleSheet)
 
 
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
+
+        self.import_input = QLineEdit(self)
+
+
+        hbox_layout5.addWidget(self.pull_btn)
+        hbox_layout5.addWidget(self.import_input)
+        hbox_layout5.addWidget(self.push_btn)
+
+        vbox_layout6.addWidget(self.canvas_widget)
+        vbox_layout6.setAlignment(Qt.AlignTop)
+        vbox_layout6.addLayout(hbox_layout5)
 
         vbox_layout4.addWidget(self.list_widget)
         vbox_layout4.addLayout(hbox_layout3)
@@ -615,6 +637,8 @@ class MainWindow(QMainWindow):
         self.scale_btn				        .clicked.connect(self.scale_action				  )
         self.clip_cohen_sutherland_btn      .clicked.connect(self.clip_cohen_sutherland_action)
         self.clip_liang_barsky_btn          .clicked.connect(self.clip_liang_barsky_action    )
+        self.pull_btn				        .clicked.connect(self.pull_action				  )
+        self.push_btn				        .clicked.connect(self.push_action				  )
 
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
         self.canvas_widget.statusChanged.connect(self.updateUI)
@@ -624,7 +648,8 @@ class MainWindow(QMainWindow):
         self.hbox_layout = QHBoxLayout()
         # self.hbox_layout.addWidget(toolBar)
         self.hbox_layout.addLayout(vbox_layout2)
-        self.hbox_layout.addWidget(self.canvas_widget)
+        self.hbox_layout.addLayout(vbox_layout6)
+        # self.hbox_layout.addWidget(self.canvas_widget)
         self.hbox_layout.addLayout(vbox_layout1)
         # self.hbox_layout.addWidget(self.list_widget, stretch=1)
         self.hbox_layout.addLayout(vbox_layout4, stretch=1)
@@ -785,6 +810,70 @@ class MainWindow(QMainWindow):
     def clip_liang_barsky_action(self):
         self.canvas_widget.start_clip('clip','Liang-Barsky')
         # self.statusBar().showMessage('Liang-Barsky算法裁剪线段')
+
+    def push_action(self):
+        line = self.import_input.text()
+        line = line.strip().split(' ')
+        try:
+            if line[0] == 'drawLine':
+                item_type = 'line'
+                x0 = int(line[1])
+                y0 = int(line[2])
+                x1 = int(line[3])
+                y1 = int(line[4])
+                p_list = [[x0, y0], [x1, y1]]
+                algorithm = line[5]
+                if algorithm not in ['Naive', 'DDA', 'Bresenham']: raise BaseException
+            elif line[0] == 'drawPolygon':
+                item_type = 'polygon'
+                p_list = []
+                for i in range(1, len(line) - 1, 2):
+                    p_list.append([int(line[i]), int(line[i+1])])
+                algorithm = line[len(line) - 1]
+                if algorithm not in ['DDA', 'Bresenham']: raise BaseException
+            elif line[0] == 'drawEllipse':
+                item_type = 'ellipse'
+                x0 = int(line[1])
+                y0 = int(line[2])
+                x1 = int(line[3])
+                y1 = int(line[4])
+                x0, y0, x1, y1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
+                algorithm = ''
+                p_list = [[x0, y0], [x1, y1]]
+            elif line[0] == 'drawCurve':
+                item_type = 'curve'
+                p_list = []
+                for i in range(1, len(line) - 1, 2):
+                    p_list.append([int(line[i]), int(line[i+1])])
+                algorithm = line[len(line) - 1]
+                if algorithm not in ['Bezier', 'B-spline']: raise BaseException
+            else:
+                raise BaseException
+        except BaseException:
+            QMessageBox.critical(self, "解析失败", "您输入的命令有误, 请修改后重试\n注意: \n该命令行仅支持cg_cli规范中的绘制命令, 且不要设置ID")
+            return
+        finally:
+            item = MyItem(self.get_id(), item_type, p_list, algorithm, self.canvas_widget.pen_color)
+            item.isTemp = False
+            item.isDirty = True
+            item.selected = False
+            self.log_widget.do('draw', item, None)
+            self.canvas_widget.scene().addItem(item)
+            self.canvas_widget.item_dict[item.id] = item
+            self.canvas_widget.scene().update()
+            self.canvas_widget.addItem(item)
+            return
+        
+    def pull_action(self):
+        if self.canvas_widget.selected_id == '':
+            self.import_input.clear()
+        else:
+            item = self.canvas_widget.item_dict[self.canvas_widget.selected_id]
+            buf = 'draw' + item.item_type.capitalize() + ' '
+            for p in item.p_list:
+                buf += '%d %d ' % (p[0], p[1])
+            buf += item.algorithm
+            self.import_input.setText(buf)
 
 
     def updateUI(self, old = '', new = '', algorithm = ''):
