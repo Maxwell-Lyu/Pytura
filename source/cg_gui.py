@@ -569,11 +569,11 @@ class MainWindow(QMainWindow):
         self.status_label = QLabel()
         self.statusBar().addPermanentWidget(self.status_label)
 
-        self.import_input = QLineEdit(self)
+        self.command_input = QLineEdit(self)
 
 
         hbox_layout5.addWidget(self.pull_btn)
-        hbox_layout5.addWidget(self.import_input)
+        hbox_layout5.addWidget(self.command_input)
         hbox_layout5.addWidget(self.push_btn)
 
         vbox_layout6.addWidget(self.canvas_widget)
@@ -812,7 +812,7 @@ class MainWindow(QMainWindow):
         # self.statusBar().showMessage('Liang-Barsky算法裁剪线段')
 
     def push_action(self):
-        line = self.import_input.text()
+        line = self.command_input.text()
         line = line.strip().split(' ')
         try:
             if line[0] == 'drawLine':
@@ -866,14 +866,14 @@ class MainWindow(QMainWindow):
         
     def pull_action(self):
         if self.canvas_widget.selected_id == '':
-            self.import_input.clear()
+            self.command_input.clear()
         else:
             item = self.canvas_widget.item_dict[self.canvas_widget.selected_id]
             buf = 'draw' + item.item_type.capitalize() + ' '
             for p in item.p_list:
                 buf += '%d %d ' % (p[0], p[1])
             buf += item.algorithm
-            self.import_input.setText(buf)
+            self.command_input.setText(buf)
 
 
     def updateUI(self, old = '', new = '', algorithm = ''):
