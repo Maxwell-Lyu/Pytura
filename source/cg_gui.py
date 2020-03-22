@@ -932,7 +932,7 @@ class SplashScreen(QSplashScreen):
             self.show()
             t -= 1
             time.sleep(0.01)
-
+        self.setWindowOpacity(1)
         time.sleep(self.duration)
         t = 0
         while t <= self.steps:
