@@ -38,10 +38,14 @@ class MyCanvas(QGraphicsView):
     画布窗体类，继承自QGraphicsView，采用QGraphicsView、QGraphicsScene、QGraphicsItem的绘图框架
     """
     statusChanged = pyqtSignal(str, str, str)
+    selectChanged = pyqtSignal(str, str, str)
 
     def set_status(self, value):
         self.statusChanged.emit(self.status, value, self.temp_algorithm)
         self.status = value
+    def set_select(self, value):
+        self.selected_id = value
+        self.selectChanged.emit('', '', '')
 
     def addItem(self, item):
         new_entry = QListWidgetItem(item.__icon__(), item.item_type.title() + '\t' + item.id)
@@ -129,13 +133,13 @@ class MyCanvas(QGraphicsView):
     def clear_selection(self):
         if self.selected_id != '':
             self.item_dict[self.selected_id].selected = False
-            self.selected_id = ''
+            self.set_select('')
 
     def delete_selection(self):
         if self.selected_id != '':
             item = self.item_dict.pop(self.selected_id)
             self.scene().removeItem(item)
-            self.selected_id = ''
+            self.set_select('')
             return item
 
     def selection_changed(self, selected: str):
@@ -145,7 +149,7 @@ class MyCanvas(QGraphicsView):
             self.item_dict[self.selected_id].update()
         if selected != '':
             selected = selected.split('\t', 1)[1]
-            self.selected_id = selected
+            self.set_select(selected)
             self.item_dict[selected].selected = True
             self.item_dict[selected].update()
         self.set_status('')
@@ -204,12 +208,13 @@ class MyCanvas(QGraphicsView):
                 self.item_dict[self.selected_id].selected = False
                 self.item_dict[self.selected_id].update()
             if len(self.main_window.canvas_widget.items(QPoint(x, y))):
-                self.selected_id = self.main_window.canvas_widget.items(QPoint(x, y))[0].id
+                self.set_select(self.main_window.canvas_widget.items(QPoint(x, y))[0].id)
                 self.main_window.list_widget.setCurrentItem(self.item_dict[self.selected_id].entry)
                 self.item_dict[self.selected_id].selected = True
             else:
                 self.main_window.list_widget.clearSelection()
-                self.selected_id = ''
+                self.set_select('')
+            self.update()
         elif self.status == 'translate' or self.status == 'rotate':
             self.edit_data = [[x, y], [x, y]]
         elif self.status == 'scale':
@@ -372,6 +377,9 @@ class MainWindow(QMainWindow):
     }
     QPushButton:checked {
         border-image: url(asset/img/tool_checked.png) 4 stretch;
+    }   
+    QPushButton:disabled {
+        border-image: url(asset/img/tool_disabled.png) 4 stretch;
     }   
     QGraphicsView{
         background: #ffffff;
@@ -605,6 +613,7 @@ class MainWindow(QMainWindow):
 
         self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
         self.canvas_widget.statusChanged.connect(self.updateUI)
+        self.canvas_widget.selectChanged.connect(self.updateUI)
 
         # 设置主窗口的布局
         self.hbox_layout = QHBoxLayout()
@@ -768,7 +777,7 @@ class MainWindow(QMainWindow):
         # self.statusBar().showMessage('Liang-Barsky算法裁剪线段')
 
 
-    def updateUI(self, old, new, algorithm):
+    def updateUI(self, old = '', new = '', algorithm = ''):
         self.line_naive_btn                 .setChecked(False)
         self.line_dda_btn                   .setChecked(False)
         self.line_bresenham_btn             .setChecked(False)
@@ -782,7 +791,20 @@ class MainWindow(QMainWindow):
         self.scale_btn						.setChecked(False)
         self.clip_cohen_sutherland_btn      .setChecked(False)
         self.clip_liang_barsky_btn          .setChecked(False)
-        
+        if self.canvas_widget.selected_id == '':
+            self.translate_btn					.setDisabled(True)
+            self.rotate_btn						.setDisabled(True)
+            self.scale_btn						.setDisabled(True)
+            self.clip_cohen_sutherland_btn      .setDisabled(True)
+            self.clip_liang_barsky_btn          .setDisabled(True)
+            self.delete_btn                     .setDisabled(True)
+        else:
+            self.translate_btn					.setDisabled(False)
+            self.rotate_btn						.setDisabled(False)
+            self.scale_btn						.setDisabled(False)
+            self.clip_cohen_sutherland_btn      .setDisabled(False)
+            self.clip_liang_barsky_btn          .setDisabled(False)
+            self.delete_btn                     .setDisabled(False)
         if new == '':
             message = '空闲'
         elif new == 'line':
@@ -950,5 +972,6 @@ if __name__ == '__main__':
     app.processEvents()
     mw = MainWindow()
     mw.show()
+    mw.updateUI()
     splash.finish(mw)
     sys.exit(app.exec_())
