@@ -111,6 +111,7 @@ class MyCanvas(QGraphicsView):
     def finish_edit(self):
         self.main_window.log_widget.do('edit', self.item_dict[self.temp_id], self.edit_p_list)
         self.set_status('')
+        self.temp_item = self.item_dict[self.temp_id]
         self.temp_id = ''
         self.temp_item.isTemp = False
         self.temp_item.isDirty = True
