@@ -45,6 +45,7 @@ class MyCanvas(QGraphicsView):
     def addItem(self):
         new_entry = QListWidgetItem(self.temp_item.__icon__(), self.temp_item.item_type.title() + '\t' + self.temp_id)
         new_entry.setToolTip('选中该' + self.temp_item.item_type.title())
+        self.temp_item.entry = new_entry
         self.list_widget.addItem(new_entry)
 
     def __init__(self, *args):
@@ -195,6 +196,7 @@ class MyCanvas(QGraphicsView):
             if self.selected_id: self.item_dict[self.selected_id].selected = False
             if len(self.main_window.canvas_widget.items(QPoint(x, y))):
                 self.selected_id = self.main_window.canvas_widget.items(QPoint(x, y))[0].id
+                self.main_window.list_widget.setCurrentItem(self.item_dict[self.selected_id].entry)
                 self.item_dict[self.selected_id].selected = True
             else:
                 self.selected_id = ''
@@ -258,6 +260,7 @@ class MyItem(QGraphicsItem):
         self.isDirty = True
         self.isTemp = True
         self.color = color
+        self.entry = None
     
     def __icon__(self) -> QIcon:
         if self.item_type == 'line':
