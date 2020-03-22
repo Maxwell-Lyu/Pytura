@@ -4,6 +4,7 @@
 import sys, time
 import math
 import cg_algorithms as alg
+import copy
 from typing import Optional
 from PyQt5.QtWidgets import (
     QColorDialog, 
@@ -42,10 +43,10 @@ class MyCanvas(QGraphicsView):
         self.statusChanged.emit(self.status, value, self.temp_algorithm)
         self.status = value
 
-    def addItem(self):
-        new_entry = QListWidgetItem(self.temp_item.__icon__(), self.temp_item.item_type.title() + '\t' + self.temp_id)
-        new_entry.setToolTip('选中该' + self.temp_item.item_type.title())
-        self.temp_item.entry = new_entry
+    def addItem(self, item):
+        new_entry = QListWidgetItem(item.__icon__(), item.item_type.title() + '\t' + item.id)
+        new_entry.setToolTip('选中该' + item.item_type.title())
+        item.entry = new_entry
         self.list_widget.addItem(new_entry)
 
     def __init__(self, *args):
@@ -95,13 +96,15 @@ class MyCanvas(QGraphicsView):
         self.temp_last_point = 0
         self.item_dict[self.temp_id] = self.temp_item
         # self.list_widget.addItem(self.temp_id)
-        self.addItem()
+        self.main_window.log_widget.do('draw', self.item_dict[self.temp_id])
+        self.addItem(self.temp_item)
         self.temp_item.isDirty = True
         self.temp_item.isTemp = False
         self.temp_id = ''
         self.updateScene([self.sceneRect()])
 
     def finish_edit(self):
+        self.main_window.log_widget.do('edit', self.item_dict[self.temp_id], self.edit_p_list)
         self.set_status('')
         self.temp_id = ''
         self.temp_item.isTemp = False
@@ -115,8 +118,10 @@ class MyCanvas(QGraphicsView):
         self.edit_data = []
         minPoint = min(self.temp_item.p_list)
         maxPoint = max(self.temp_item.p_list)
+        self.edit_p_list = self.item_dict[self.selected_id].p_list
         new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
         self.item_dict[self.selected_id].p_list = new_p_list
+        self.main_window.log_widget.do('edit', self.item_dict[self.selected_id], self.edit_p_list)
         self.item_dict[self.selected_id].isDirty = True
         self.scene().removeItem(self.temp_item)
         self.updateScene([self.sceneRect()])
@@ -131,15 +136,16 @@ class MyCanvas(QGraphicsView):
             item = self.item_dict.pop(self.selected_id)
             self.scene().removeItem(item)
             self.selected_id = ''
+            return item
 
     def selection_changed(self, selected: str):
-        selected = selected.split('\t', 1)[1]
-        self.main_window.statusBar().showMessage('图元选择： %s' % selected)
+        # self.main_window.statusBar().showMessage('图元选择： %s' % selected)
         if self.selected_id != '':
             self.item_dict[self.selected_id].selected = False
             self.item_dict[self.selected_id].update()
-        self.selected_id = selected
         if selected != '':
+            selected = selected.split('\t', 1)[1]
+            self.selected_id = selected
             self.item_dict[selected].selected = True
             self.item_dict[selected].update()
         self.set_status('')
@@ -447,6 +453,7 @@ class MainWindow(QMainWindow):
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
 
+        self.log_widget = LogList(self, self.canvas_widget, self)
 
         # Tool Bar
         vbox_layout1 = QVBoxLayout()
@@ -455,6 +462,10 @@ class MainWindow(QMainWindow):
         vbox_layout2 = QVBoxLayout()
         vbox_layout2.setSpacing(0)
         vbox_layout2.setAlignment(Qt.AlignTop)
+        vbox_layout4 = QVBoxLayout()
+        # vbox_layout4.setSpacing(0)
+        # vbox_layout4.setAlignment(Qt.AlignTop)
+        
         ## Tool Btn
         self.set_pen_btn                    = QPushButton(QIcon('asset/icon/set_pen.svg'), '')
         self.set_pen_btn.setStyleSheet("""  
@@ -475,6 +486,8 @@ class MainWindow(QMainWindow):
         self.save_btn                       = QPushButton(QIcon('asset/icon/save.svg'), '')
         self.export_btn                     = QPushButton(QIcon('asset/icon/export.svg'), '')
         self.exit_btn                       = QPushButton(QIcon('asset/icon/exit.svg'), '')
+        self.undo_btn                       = QPushButton(QIcon('asset/icon/undo.svg'), '')
+        self.redo_btn                       = QPushButton(QIcon('asset/icon/redo.svg'), '')
         self.line_naive_btn                 = QPushButton(QIcon('asset/icon/line_naive.svg'), '')
         self.line_dda_btn                   = QPushButton(QIcon('asset/icon/line_dda.svg'), '')
         self.line_bresenham_btn             = QPushButton(QIcon('asset/icon/line_bresenham.svg'), '')
@@ -490,9 +503,11 @@ class MainWindow(QMainWindow):
         self.clip_liang_barsky_btn          = QPushButton(QIcon('asset/icon/clip_liang_barsky.svg'), '')
         self.delete_btn                     .setToolTip('删除选中图元')
         self.reset_canvas_btn               .setToolTip('重置画布')
-        self.save_btn                     .setToolTip('保存为图片')
+        self.save_btn                       .setToolTip('保存为图片')
         self.export_btn                     .setToolTip('导出为图元命令')
         self.exit_btn                       .setToolTip('退出')
+        self.undo_btn                       .setToolTip('撤销')
+        self.redo_btn                       .setToolTip('重做')
         self.line_naive_btn                 .setToolTip('Naive算法绘制线段')
         self.line_dda_btn                   .setToolTip('DDA算法绘制线段')
         self.line_bresenham_btn             .setToolTip('Bresenham算法绘制线段')
@@ -519,6 +534,11 @@ class MainWindow(QMainWindow):
         self.scale_btn						.setCheckable(True)
         self.clip_cohen_sutherland_btn      .setCheckable(True)
         self.clip_liang_barsky_btn          .setCheckable(True)
+
+
+        vbox_layout4.addWidget(self.list_widget)
+        vbox_layout4.addWidget(self.log_widget)
+
         ## Add Btn
         vbox_layout2.addWidget(self.line_naive_btn               )
         vbox_layout2.addWidget(self.line_dda_btn                 )
@@ -544,13 +564,17 @@ class MainWindow(QMainWindow):
         vbox_layout1.addWidget(self.save_btn                     )
         vbox_layout1.addWidget(self.export_btn                   )
         vbox_layout1.addWidget(self.exit_btn                     )
+        vbox_layout1.addWidget(self.undo_btn                     )
+        vbox_layout1.addWidget(self.redo_btn                     )
         ## Slots
         self.set_pen_btn                    .clicked.connect(self.set_pen_action              )
         self.delete_btn                     .clicked.connect(self.delete_action               )
         self.reset_canvas_btn               .clicked.connect(self.reset_canvas_action         )
-        self.save_btn                       .clicked.connect(self.save_action               )
+        self.save_btn                       .clicked.connect(self.save_action                 )
         self.export_btn                     .clicked.connect(self.export_action               )
         self.exit_btn                       .clicked.connect(qApp.quit                        )
+        self.undo_btn                       .clicked.connect(self.undo_action                 )
+        self.redo_btn                       .clicked.connect(self.redo_action                 )
         self.line_naive_btn                 .clicked.connect(self.line_naive_action           )
         self.line_dda_btn                   .clicked.connect(self.line_dda_action             )
         self.line_bresenham_btn             .clicked.connect(self.line_bresenham_action       )
@@ -574,7 +598,8 @@ class MainWindow(QMainWindow):
         self.hbox_layout.addLayout(vbox_layout2)
         self.hbox_layout.addWidget(self.canvas_widget)
         self.hbox_layout.addLayout(vbox_layout1)
-        self.hbox_layout.addWidget(self.list_widget, stretch=1)
+        # self.hbox_layout.addWidget(self.list_widget, stretch=1)
+        self.hbox_layout.addLayout(vbox_layout4, stretch=1)
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.hbox_layout)
         self.central_widget.setStyleSheet(self.centralStyleSheet)
@@ -610,13 +635,17 @@ class MainWindow(QMainWindow):
         )
 
     def reset_canvas_action(self):
+        self.canvas_widget.clear_selection()
         self.scene.clear()
         self.list_widget.clear()
         self.canvas_widget.item_dict.clear()
+        self.log_widget.clear()
+        self.log_widget.item_list.clear()
+        self.log_widget.item_ptr = -1
         self.item_cnt = 0
 
     def delete_action(self):
-        self.canvas_widget.delete_selection()
+        self.log_widget.do('delete', self.canvas_widget.delete_selection())
         self.list_widget.takeItem(self.list_widget.selectedIndexes()[0].row())
 
     def export_action(self):
@@ -641,6 +670,12 @@ class MainWindow(QMainWindow):
         filename = QFileDialog.getSaveFileName(self,'导出当前画布', '.', '便携式网络图形(*.png)')
         if filename[0]:
             image.save(filename[0])
+    
+    def undo_action(self):
+        self.log_widget.undo()
+
+    def redo_action(self):
+        self.log_widget.redo()
 
     # Description: line actions
     def line_naive_action(self):
@@ -774,6 +809,98 @@ class MainWindow(QMainWindow):
                 self.clip_liang_barsky_btn          .setChecked(True)
         self.statusBar().showMessage(message)
         
+
+class LogItem():
+    def __init__(self, parent=None, item: MyItem = None, old_p_list:list = None, op: str = ''):
+        self.id = item.id
+        self.type = item.item_type
+        self.p_list = item.p_list.copy()
+        if old_p_list:
+            self.old_p_list = old_p_list.copy()
+        self.algorithm = item.algorithm
+        self.color = item.color
+        self.op = op
+        if op == 'draw':
+            self.icon = QIcon('asset/icon/delete.svg')
+            self.msg = '绘制图元'
+        elif op == 'delete':
+            self.icon = QIcon('asset/icon/delete.svg')
+            self.msg = '删除图元'
+        elif op == 'edit':
+            self.icon = QIcon('asset/icon/delete.svg')
+            self.msg = '变换图元'
+        self.msg += ' '+ self.id
+
+class LogList(QListWidget):
+    def __init__(self, parent=None, canvas: MyCanvas = None, mainwindow: MainWindow = None):
+        super().__init__(parent=parent)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.canvas : MyCanvas = canvas
+        self.mainwindow = mainwindow
+        self.item_ptr = -1
+        self.item_list = []
+
+    def do(self, op, item, old_p_list = None):
+        self.clear()
+        list_item = LogItem(self, item, old_p_list, op)
+        self.item_list = self.item_list[0:self.item_ptr + 1] + [list_item]
+        self.item_ptr += 1
+        for i in self.item_list:
+            self.addItem(QListWidgetItem(i.icon, i.msg,self))
+        self.setCurrentRow(self.item_ptr)   
+
+    def undo(self):
+        self.canvas.clear_selection()
+        if self.item_ptr == -1: return
+        if self.item_list[self.item_ptr].op == 'draw':
+            item : MyItem = self.canvas.item_dict.pop(self.item_list[self.item_ptr].id)
+            self.canvas.scene().removeItem(item)
+            self.canvas.update()
+            self.mainwindow.list_widget.takeItem(self.mainwindow.list_widget.indexFromItem(item.entry).row())
+        elif self.item_list[self.item_ptr].op == 'edit':
+            self.canvas.item_dict[self.item_list[self.item_ptr].id].p_list = self.item_list[self.item_ptr].old_p_list
+            self.canvas.item_dict[self.item_list[self.item_ptr].id].isDirty = True
+            self.canvas.update()
+        elif self.item_list[self.item_ptr].op == 'delete':
+            rec:LogItem = self.item_list[self.item_ptr]
+            item = MyItem(rec.id, rec.type, rec.p_list, rec.algorithm, rec.color)
+            item.isTemp = False
+            item.isDirty = True
+            self.canvas.item_dict[rec.id] = item
+            self.canvas.scene().addItem(item)
+            self.canvas.addItem(item)
+            self.canvas.update()
+
+        self.item_ptr -= 1
+        if self.item_ptr == -1:
+            self.clearSelection()
+        else:
+            self.setCurrentRow(self.item_ptr)   
+
+    def redo(self):
+        self.canvas.clear_selection()
+        if self.item_ptr + 1 == len(self.item_list): return
+        if self.item_list[self.item_ptr + 1].op == 'draw':
+            rec:LogItem = self.item_list[self.item_ptr + 1]
+            item = MyItem(rec.id, rec.type, rec.p_list, rec.algorithm, rec.color)
+            item.isTemp = False
+            item.isDirty = True
+            self.canvas.item_dict[rec.id] = item
+            self.canvas.scene().addItem(item)
+            self.canvas.addItem(item)
+            self.canvas.update()
+        elif self.item_list[self.item_ptr + 1].op == 'edit':
+            self.canvas.item_dict[self.item_list[self.item_ptr + 1].id].p_list = self.item_list[self.item_ptr + 1].p_list
+            self.canvas.item_dict[self.item_list[self.item_ptr + 1].id].isDirty = True
+            self.canvas.update()
+        elif self.item_list[self.item_ptr + 1].op == 'delete':
+            item : MyItem = self.canvas.item_dict.pop(self.item_list[self.item_ptr + 1].id)
+            self.canvas.scene().removeItem(item)
+            self.canvas.update()
+            self.mainwindow.list_widget.takeItem(self.mainwindow.list_widget.indexFromItem(item.entry).row())
+        self.item_ptr += 1
+        self.setCurrentRow(self.item_ptr)   
+
 class SplashScreen(QSplashScreen):
     def __init__(self, image:str, steps = 10.0, duration = 1):
         super(SplashScreen, self).__init__(QPixmap(image))
