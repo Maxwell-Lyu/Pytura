@@ -389,6 +389,8 @@ class MainWindow(QMainWindow):
         font-family: 'Sarasa UI SC Semibold'
     }
     QPushButton{
+        margin: 0 -4px 0 -4px;
+        icon-size: 24px;
         min-height: 24px;
         min-width: 96px;
         border-width: 0 8px 0 8px;
@@ -463,6 +465,7 @@ class MainWindow(QMainWindow):
         vbox_layout2.setSpacing(0)
         vbox_layout2.setAlignment(Qt.AlignTop)
         vbox_layout4 = QVBoxLayout()
+        hbox_layout3 = QHBoxLayout()
         # vbox_layout4.setSpacing(0)
         # vbox_layout4.setAlignment(Qt.AlignTop)
         
@@ -536,7 +539,12 @@ class MainWindow(QMainWindow):
         self.clip_liang_barsky_btn          .setCheckable(True)
 
 
+        self.undo_btn.setStyleSheet(self.styleSheet)
+        self.redo_btn.setStyleSheet(self.styleSheet)
+
+
         vbox_layout4.addWidget(self.list_widget)
+        vbox_layout4.addLayout(hbox_layout3)
         vbox_layout4.addWidget(self.log_widget)
 
         ## Add Btn
@@ -564,8 +572,9 @@ class MainWindow(QMainWindow):
         vbox_layout1.addWidget(self.save_btn                     )
         vbox_layout1.addWidget(self.export_btn                   )
         vbox_layout1.addWidget(self.exit_btn                     )
-        vbox_layout1.addWidget(self.undo_btn                     )
-        vbox_layout1.addWidget(self.redo_btn                     )
+
+        hbox_layout3.addWidget(self.undo_btn                     )
+        hbox_layout3.addWidget(self.redo_btn                     )
         ## Slots
         self.set_pen_btn                    .clicked.connect(self.set_pen_action              )
         self.delete_btn                     .clicked.connect(self.delete_action               )
