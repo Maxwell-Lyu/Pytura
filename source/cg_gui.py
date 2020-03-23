@@ -34,7 +34,6 @@ from PyQt5.QtWidgets import (
     QStyleOptionGraphicsItem)
 from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap, QFontDatabase, QImage
 from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
-import ctypes
 class MyCanvas(QGraphicsView):
     """
     画布窗体类，继承自QGraphicsView，采用QGraphicsView、QGraphicsScene、QGraphicsItem的绘图框架
@@ -661,7 +660,7 @@ class MainWindow(QMainWindow):
         self.resize(600, 600)
         self.setWindowTitle('Pytura')
         self.setWindowIcon(QIcon('asset/icon/pytura.ico'))
-        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
+        # ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
         self.list_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def get_id(self):
