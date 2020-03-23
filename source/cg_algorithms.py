@@ -31,7 +31,6 @@ def draw_line(p_list, algorithm):
             k = (y1 - y0) / (x1 - x0)
             for x in range(min(x0, x1), max(x0, x1) + 1):
                 result.append((x, round(y0 + k * (x - x0))))
-        pass
     elif algorithm == 'DDA':
         length = max(abs(y1 - y0), abs(x1 - x0))
         if length == 0: 
@@ -57,9 +56,9 @@ def draw_line(p_list, algorithm):
         if interchange:
             dx, dy = dy, dx
         e = 2 * dy - dx
-        for i in range(1, dx + 1):
+        for i in range(dx):
             result.append((x, y))
-            while(e > 0):
+            if e > 0:
                 if interchange:
                     x += s1
                 else:
@@ -71,7 +70,6 @@ def draw_line(p_list, algorithm):
                 x = x + s1
             e = e + 2 * dy
         result.append((x1, y1))
-        pass
     return result
 
 
