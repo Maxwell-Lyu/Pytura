@@ -849,10 +849,6 @@ class MainWindow(QMainWindow):
                 if algorithm not in ['Bezier', 'B-spline']: raise BaseException
             else:
                 raise BaseException
-        except BaseException:
-            QMessageBox.critical(self, "解析失败", "您输入的命令有误, 请修改后重试\n注意: \n该命令行仅支持cg_cli规范中的绘制命令, 且不要设置ID")
-            return
-        finally:
             item = MyItem(self.get_id(), item_type, p_list, algorithm, self.canvas_widget.pen_color)
             item.isTemp = False
             item.isDirty = True
@@ -862,6 +858,9 @@ class MainWindow(QMainWindow):
             self.canvas_widget.item_dict[item.id] = item
             self.canvas_widget.scene().update()
             self.canvas_widget.addItem(item)
+        except BaseException:
+            QMessageBox.critical(self, "解析失败", "您输入的命令有误, 请修改后重试\n注意: \n该命令行仅支持cg_cli规范中的绘制命令, 且不要设置ID")
+        finally:
             return
         
     def pull_action(self):
