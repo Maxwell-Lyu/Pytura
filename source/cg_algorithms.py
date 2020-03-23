@@ -33,22 +33,19 @@ def draw_line(p_list, algorithm):
                 result.append((x, round(y0 + k * (x - x0))))
         pass
     elif algorithm == 'DDA':
-        if x0 == x1:
-            for y in range(min(y0, y1), max(y0, y1) + 1):
-                result.append((x0, y))
-        elif abs(y1 - y0) <= abs(x1 - x0):
-            if x0 > x1:
-                x0, y0, x1, y1 = x1, y1, x0, y0
-            k = (y1 - y0) / (x1 - x0)
-            for x in range(min(x0, x1), max(x0, x1) + 1):
-                result.append((x, round(y0 + k * (x - x0))))
+        length = max(abs(y1 - y0), abs(x1 - x0))
+        if length == 0: 
+            result.append((x0, y0))
         else:
-            if y0 > y1:
-                x0, y0, x1, y1 = x1, y1, x0, y0
-            k = (x1 - x0) / (y1 - y0)
-            for y in range(min(y0, y1), max(y0, y1) + 1):
-                result.append((round(x0 + k * (y - y0)), y))
-        pass
+            dx = (x1 - x0) / length
+            dy = (y1 - y0) / length
+            i = 1
+            x, y = x0, y0
+            while i <= length:
+                result.append((round(x), round(y)))
+                x += dx
+                y += dy
+                i += 1
     elif algorithm == 'Bresenham':
         x = x0
         y = y0
