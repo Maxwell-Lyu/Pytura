@@ -1,11 +1,13 @@
 \documentclass[a4paper,UTF8]{article}
 \usepackage{ctex}
 \usepackage[margin=1.25in]{geometry}
-\usepackage{color}
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsthm}
+\usepackage{tikz}
+\usepackage{color}
+\usepackage{listings}
 % \usepackage[thmmarks, amsmath, thref]{ntheorem}
 \theoremstyle{definition}
 \newtheorem*{solution}{Solution}
@@ -14,7 +16,46 @@
 \usepackage{url}
 \usepackage[colorlinks,urlcolor=blue]{hyperref}
 \usepackage{enumerate}
+
+
 \renewcommand\refname{参考文献}
+\setCJKmainfont{SimHei}
+
+\setmonofont{Consolas}
+\definecolor{mygreen}{rgb}{0,0.6,0}  
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}  
+\definecolor{mymauve}{rgb}{0.58,0,0.82} 
+
+\lstset{ %  
+  backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}  
+  basicstyle=\ttfamily\footnotesize,
+  % basicstyle=\footnotesize,        % the size of the fonts that are used for the code  
+  breakatwhitespace=false,         % sets if automatic breaks should only happen at whitespace  
+  breaklines=true,                 % sets automatic line breaking  
+  captionpos=bl,                    % sets the caption-position to bottom  
+  commentstyle=\color{mygreen},    % comment style  
+  deletekeywords={...},            % if you want to delete keywords from the given language  
+  escapeinside={\%*}{*)},          % if you want to add LaTeX within your code  
+  extendedchars=true,              % lets you use non-ASCII characters; for 8-bits encodings only, does not work with UTF-8  
+  frame=single,                    % adds a frame around the code  
+  keepspaces=true,                 % keeps spaces in text, useful for keeping indentation of code (possibly needs columns=flexible)  
+  keywordstyle=\color{blue},       % keyword style  
+  %language=Python,                 % the language of the code  
+  morekeywords={*,...},            % if you want to add more keywords to the set  
+  numbers=left,                    % where to put the line-numbers; possible values are (none, left, right)  
+  numbersep=12pt,                   % how far the line-numbers are from the code  
+  numberstyle=\footnotesize\color{mygray}, % the style that is used for the line-numbers  
+  rulecolor=\color{black},         % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. comments (green here))  
+  showspaces=false,                % show spaces everywhere adding particular underscores; it overrides 'showstringspaces'  
+  showstringspaces=false,          % underline spaces within strings only  
+  showtabs=false,                  % show tabs within strings adding particular underscores  
+  stepnumber=1,                    % the step between two line-numbers. If it's 1, each line will be numbered  
+  stringstyle=\color{orange},     % string literal style  
+  tabsize=2,                       % sets default tabsize to 2 spaces  
+  %title=myPython.py                   % show the filename of files included with \lstinputlisting; also try caption instead of title  
+}  
+
+
 
 
 %--
@@ -22,15 +63,171 @@
 %--
 \begin{document}
 \title{\textbf{《计算机图形学》3月报告}}
-\author{学号，姓名，\href{mailto:xxx@xxx.com}{xxx@xxx.com}}
+\author{171860592，吕云哲，\href{mailto:maxwell.lyu@foxmail.com}{maxwell.lyu@foxmail.com}}
 \maketitle
 
 \section{综述}
-\dots
-
+\subsection{进度综述}
+  本进度报告为持续更新版, 之后的进度会直接在该报告中添加, 直到实验正式结束, 将正式转为项目报告\\
+  当前的进度如下: 
+  \begin{itemize}
+    \item cg\_algorithms.py: 完成全部功能
+    \item cg\_cli.py: 完成全部功能
+    \item cg\_gui.py: 完成全部必要功能, 可选功能持续添加中, 已经添加的额外功能
+    \begin{itemize}
+      \item [功能]将画布导出为PNG图片
+      \item [功能]将画布导出为绘图命令, 兼容cg\_cli
+      \item [功能]单行输入, 用cg\_cli命令绘图, 或将选中图元解析为命令
+      \item [功能]操作历史记录, 撤销和重做
+      \item [功能]控件选取颜色
+      \item [交互]点击图元进行选中
+      \item [交互]退出, 重置画布加入确认弹窗, 防止误操作
+      \item [交互]根据选中的对象, 智能禁用不适用的操作, 例如椭圆不支持旋转
+      \item [界面]优美界面, 设计风格参考Android 4.0 Holo Dark
+      \item [界面]启动时显示Splash, 展现产品形象
+      \item [界面]2种按钮样式, 4种按钮状态
+    \end{itemize}
+  \end{itemize}
+\subsection{项目综述}
+  本项目为2020年春季计算机图形学课程的课程设计, 以Python3为编写语言, 旨在通过实际的项目实践, 熟悉本课程教学内容, 掌握重点的图形绘制算法.\\
+  项目的成果包括以下3个部分
+  \begin{itemize}
+    \item cg\_algorithms.py: 所有需要实现的算法
+    \item cg\_cli.py: 基于算法, 构建命令行程序, 对算法进行应用于展示
+    \item cg\_gui.py: 基于算法, 使用Pyqt5框架, 对算法进行应用与展示
+  \end{itemize}
 \section{算法介绍}
-\subsection{\dots}
-\dots
+\subsection{DDA算法绘制线段}
+\begin{itemize}
+  \item 算法介绍\\
+  DDA数值差分分析 (digital differential analyzer), 通过解直线的微分方程式, 进行直线的光栅化. 算法首先选取直线在两个方向的增量$\Delta x$和$\Delta y$中较大的一个, 作为一个光栅单位, 沿此方向扫描. 其利用了光栅扫描显示特性：像素列阵为屏幕单位网格, 通过离散取样, 使用x或y方向单位增量间隔, 逐步计算沿线路径各像素位置\\
+  \item 算法流程
+  \begin{enumerate}
+    \item 首先计算x与y方向的增量, 此处与课堂教学内容不同, 可以避免由于直线垂直带来的麻烦
+    \item 之后对直线退化为点的情况进行单独处理, 判断增量是否为0, 防止除零
+    \item 分别计算两个方向的增量, 该步亦是对课堂教学内容的简化, 推导如下:\\
+    当斜率$0\leq m\leq 1$
+    \begin{align}
+      \begin{split}
+        length &= \max(\Delta x, \Delta y) = \Delta x\\
+        x_{k+1} &= x_k + 1 = x_k + \frac{\Delta x}{\Delta x} = x_k + \frac{\Delta x}{length} = x_k + dx\\
+        y_{k+1} &= y_k + m = y_k + \frac{\Delta y}{\Delta x} = y_k + \frac{\Delta y}{length} = y_k + dy
+      \end{split}
+    \end{align}
+    当斜率$m > 1$
+    \begin{align}
+      \begin{split}
+        length &= \max(\Delta x, \Delta y) = \Delta y\\
+        x_{k+1} &= x_k + 1 = x_k + \frac{\Delta y}{\Delta y} = x_k + \frac{\Delta x}{length} = x_k + dx\\
+        y_{k+1} &= y_k + \frac{1}{m} = y_k + \frac{\Delta x}{\Delta y} = y_k + \frac{\Delta y}{length} = y_k + dy
+      \end{split}
+    \end{align}
+    因此不必费心处理沿x还是沿y递增, 直接使用下式进行迭代即可
+    \begin{align}
+      \begin{split}
+        x_{k+1} &= x_k + dx\\
+        y_{k+1} &= y_k + dy
+      \end{split}
+    \end{align}
+    \item 不断递增, 并取整, 直接使用python自带的round函数进行
+  \end{enumerate}
+  
+  
+
+  \item 我的理解: DDA和最朴素的直线点斜式方程带入方法相比, 基本原理是一致的, 做出的改变在于节约了乘法, 其理解难度较低, 效率很高. 实际绘制时, 可以明显注意到效率高于Bresenham, 在后文绘制多边形时会详细讲解
+  \item 相关代码
+  \begin{lstlisting}[language={Python}]  
+    elif algorithm == 'DDA':
+        length = max(abs(y1 - y0), abs(x1 - x0))
+        if length == 0: 
+            result.append((x0, y0))
+        else:
+            dx = (x1 - x0) / length
+            dy = (y1 - y0) / length
+            i = 1
+            x, y = x0, y0
+            while i <= length:
+                result.append((round(x), round(y)))
+                x += dx
+                y += dy
+                i += 1\end{lstlisting}
+\end{itemize}
+\subsection{Bresenham算法绘制线段}
+\begin{itemize}
+  \item 算法介绍\\
+  由Bresenham提出的算法, 采用整数增量运算, 精确而有效的光栅设备线生成算法, 也可用于其他曲线显示. 根据光栅显示原理, 离散取样过程中, 每一放样位置上只可能有2个像素接近于路径, 其核心部分为\begin{itemize}
+    \item 设计整型参量, 用于判断候选像素与实际线路径之间的偏移关系
+    \item 检测参量符号, 据此选取离路径近的像素
+  \end{itemize}
+  \item 算法流程\\
+  课堂教学仅给出了第一八分之一圆域的绘制方法, 我参考《计算机图形学的算法基础》, 构造了任意方向的绘制算法
+  \begin{enumerate}
+    \item 准备工作, 计算$\Delta x$和$\Delta y$, 根据点的相对位置确认x与y在绘制时的增减情况, 并初始化x与y为绘制起点
+    \item 判断斜率绝对值, 若超过1, 则交换dx和dy, 并在之后的流程中交换x与y的增减操作, 以下以第一八分之一圆域为例
+    \item 初始化参量e为$2\Delta y-\Delta x$
+    \item 重复$\Delta x$次\begin{enumerate}
+      \item 绘制$(x,y)$
+      \item 若e大于0, 说明绘制点$(x_{k+1}, y_{k+1})$, 此处使用s2, 可以同时解决负斜率和0斜率的问题, 因为python的sign函数对正数, 0, 负数分别返回1, 0, -1, 这步处理是很巧妙的. 更新e, 仅减去$2\Delta x$
+      \item 更新x, 同样使用sign, 处理了无穷斜率的情况, 同时将e加上$2\Delta y$, 与前一步的$-2\Delta x$配合, 完成更新
+    \end{enumerate}
+    \item 最后, 需要将结束点加上
+  \end{enumerate}
+  \item 我的理解\begin{itemize}
+    \item 算法本身有着很强的拓展性, 只要定义一个合适的决策参量, 该算法能够绘制很多其他的曲线
+    \item 编写时, 我遇到的最大困难是耦合代码, 8个圆域, 还有水平垂直等特殊情况. 比较容易想到的方法, 是处理斜率超过1, 只需添加一个交换指示变量即可. 而使用sign函数将水平垂直和正负斜率均处理掉, 简直是绝妙的设计, 我十分佩服《计算机图形学的算法基础》一书的作者
+  \end{itemize}
+  \item 相关代码
+  \begin{lstlisting}[language={Python}]     
+    elif algorithm == 'Bresenham':
+        x = x0
+        y = y0
+        dx = abs(x1 - x0)
+        dy = abs(y1 - y0)
+        s1 = sign(x1 - x0)
+        s2 = sign(y1 - y0)
+        interchange = (dy > dx)
+        if interchange:
+            dx, dy = dy, dx
+        e = 2 * dy - dx
+        for i in range(dx):
+            result.append((x, y))
+            if e > 0:
+                if interchange:
+                    x += s1
+                else:
+                    y += s2
+                e = e - 2 * dx
+            if interchange:
+                y = y + s2
+            else:
+                x = x + s1
+            e = e + 2 * dy
+        result.append((x1, y1))\end{lstlisting}
+\end{itemize}
+\subsection{DDA算法绘制线段}
+\begin{itemize}
+  \item 算法介绍\\
+  \item 算法流程
+  \begin{enumerate}
+    \item 
+  \end{enumerate}
+  \item 我的理解: 
+  \item 相关代码
+  \begin{lstlisting}[language={Python}] 
+\end{lstlisting}
+\end{itemize}
+\subsection{DDA算法绘制线段}
+\begin{itemize}
+  \item 算法介绍\\
+  \item 算法流程
+  \begin{enumerate}
+    \item 
+  \end{enumerate}
+  \item 我的理解: 
+  \item 相关代码
+  \begin{lstlisting}[language={Python}] 
+\end{lstlisting}
+\end{itemize}
 \subsection{\dots}
 \dots
 		
