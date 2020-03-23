@@ -1,3 +1,10 @@
 .vscode/*
-/CG_Demo/__pycache__/*
-/img/*
+/source/__pycache__/*
+/source/asset/*
+/report/*
+!/report/*.tex
+/source/build/*
+/source/dist/*
+/psd/*
+*.exe
+*.spec
