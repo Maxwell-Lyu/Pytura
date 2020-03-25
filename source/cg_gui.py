@@ -193,7 +193,7 @@ class MyCanvas(QGraphicsView):
             self.temp_item.p_list = [self.temp_item.p_list[0], [self.temp_item.p_list[0][0], y], [x, y], [x, self.temp_item.p_list[0][1]]]
             self.temp_item.isDirty = True
         elif self.temp_last_point:
-            if self.temp_last_point == len(self.temp_item.p_list):
+            if self.temp_last_point >= len(self.temp_item.p_list):
                 self.temp_item.p_list.append([x, y])
             else:
                 self.temp_item.p_list[self.temp_last_point] = [x, y]
@@ -234,7 +234,7 @@ class MyCanvas(QGraphicsView):
             if self.temp_last_point >= len(self.temp_item.p_list):
                 self.temp_item.p_list.append([x, y])
             else:
-            self.temp_item.p_list[self.temp_last_point] = [x, y]
+                self.temp_item.p_list[self.temp_last_point] = [x, y]
             self.temp_item.isDirty = True
             self.temp_last_point += 1
         self.updateScene([self.sceneRect()])
