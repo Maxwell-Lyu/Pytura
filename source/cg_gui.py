@@ -249,8 +249,11 @@ class MyCanvas(QGraphicsView):
     def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
         if self.status == 'polygon' and self.temp_item and len(self.temp_item.p_list) >= 2:
             self.finish_draw()
-        elif self.status == 'curve' and self.temp_item and len(self.temp_item.p_list) >= 2:
-            self.finish_draw()
+        elif self.status == 'curve' and self.temp_item:
+            if self.temp_item.algorithm == 'Bezier' and len(self.temp_item.p_list) >= 2:
+                self.finish_draw()
+            elif self.temp_item.algorithm == 'B-spline' and len(self.temp_item.p_list) >= 4:
+                self.finish_draw()
         super().mouseDoubleClickEvent(event)
 
 
