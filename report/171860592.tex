@@ -8,6 +8,7 @@
 \usepackage{tikz}
 \usepackage{color}
 \usepackage{listings}
+\usepackage{cite}
 % \usepackage[thmmarks, amsmath, thref]{ntheorem}
 \theoremstyle{definition}
 \newtheorem*{solution}{Solution}
@@ -122,7 +123,7 @@
         y_{k+1} &= y_k + \frac{1}{m} = y_k + \frac{\Delta x}{\Delta y} = y_k + \frac{\Delta y}{length} = y_k + dy
       \end{split}
     \end{align}
-    因此不必费心处理沿x还是沿y递增, 直接使用下式进行迭代即可
+    因此不必费心处理沿x还是沿y递增, 直接使用下式进行迭代即可\cite{rog_2002}
     \begin{align}
       \begin{split}
         x_{k+1} &= x_k + dx\\
@@ -168,13 +169,14 @@
     \item 重复$\Delta x$次\begin{enumerate}
       \item 绘制$(x,y)$
       \item 若e大于0, 说明绘制点$(x_{k+1}, y_{k+1})$, 此处使用s2, 可以同时解决负斜率和0斜率的问题, 因为python的sign函数对正数, 0, 负数分别返回1, 0, -1, 这步处理是很巧妙的. 更新e, 仅减去$2\Delta x$
+      \item 若否, 说明绘制点$(x_{k+1}, y_{k+1})$, 该部分不改变y值和e值
       \item 更新x, 同样使用sign, 处理了无穷斜率的情况, 同时将e加上$2\Delta y$, 与前一步的$-2\Delta x$配合, 完成更新
     \end{enumerate}
     \item 最后, 需要将结束点加上
   \end{enumerate}
   \item 我的理解\begin{itemize}
     \item 算法本身有着很强的拓展性, 只要定义一个合适的决策参量, 该算法能够绘制很多其他的曲线
-    \item 编写时, 我遇到的最大困难是耦合代码, 8个圆域, 还有水平垂直等特殊情况. 比较容易想到的方法, 是处理斜率超过1, 只需添加一个交换指示变量即可. 而使用sign函数将水平垂直和正负斜率均处理掉, 简直是绝妙的设计, 我十分佩服《计算机图形学的算法基础》一书的作者
+    \item 编写时, 我遇到的最大困难是耦合代码, 8个圆域, 还有水平垂直等特殊情况. 比较容易想到的方法, 是处理斜率超过1, 只需添加一个交换指示变量即可. 而使用sign函数将水平垂直和正负斜率均处理掉\cite{rog_2002}, 简直是绝妙的设计, 我十分佩服《计算机图形学的算法基础》一书的作者
   \end{itemize}
   \item 相关代码
   \begin{lstlisting}[language={Python}]     
@@ -203,6 +205,142 @@
                 x = x + s1
             e = e + 2 * dy
         result.append((x1, y1))\end{lstlisting}
+\end{itemize}
+\subsection{DDA算法绘制多边形/Bresenham算法绘制多边形}
+\begin{itemize}
+  \item 算法介绍\\
+  绘制多边形, 其实就是绘制线段, 对于给定的n顶点列表, 按序连接顶点, 将得到n条线段. 用给定的算法对这些线段进行光栅化, 即得到绘制的多边形
+  \item 算法流程
+  \begin{enumerate}
+    \item 处理2顶点的情况: 若顶点只有2个, 将不能构成有效的多边形, 此时按照线段处理, 用指定的算法绘制两点间的线段
+    \item 对于至少3顶点的顶点列表, 利用Python列表循环访问的特性, 使用下标-1访问使用一个简单的for语句就能按序栅格化所有的线段
+  \end{enumerate}
+  \item 我的理解: 本次实验的多边形绘制相对简单, 因为实验要求并未规定是凸多边形, 因此我默认用户提供的顶点是按序合法的, 因此不进行凸包等运算, 按序连接即宣告完成
+  \item 相关代码
+  \begin{lstlisting}[language={Python}] 
+    if len(p_list) == 2:
+        return draw_line([p_list[0], p_list[1]], algorithm)
+    result = []
+    for i in range(len(p_list)):
+        line = draw_line([p_list[i - 1], p_list[i]], algorithm)
+        result += line
+    return result\end{lstlisting}
+\end{itemize}
+\subsection{中点圆生成算法绘制椭圆}
+\begin{itemize}
+  \item 算法介绍\begin{itemize}
+    \item 椭圆: 到2定点距离之和等于常数的点集
+    \item 标准位置椭圆: 长轴和短轴平行于x轴和y轴
+    \item 实验要求绘制的椭圆为标准位置椭圆, 并且不要求旋转, 因此\begin{itemize}
+      \item 利用平移, 绘制以原点为中心的椭圆, 并将其平移到指定位置
+      \item 利用对称性, 在平移的基础上, 只需绘制第一象限的1/4椭圆, 之后进行变换即可
+    \end{itemize}
+    \item 栅格化过程采取Bresenham算法的思路, 构造决策参数, 通过判断2个待选点的中点处, 决策函数的符号, 对下一位置的光栅化结果进行选取, 并迭代决策参数
+    \item 另一个重点是, 椭圆在第一象限存在一点, 其斜率为-1. 以该点进行划分, 类似Bresenham算法绘制线段时遇到的, 斜率不同时分别沿x与y递增, 可以将椭圆分为两部分进行绘制\cite{sun_2006}. 计算该点的过程如下\begin{itemize}
+      \item 当斜率为-1时, 有$$ -1$$
+      \item 根据椭圆方程, 可构造$$df(x,y) = d(b^2x^2 + a^2y^2-a^2b^2) = 2b^2xdx + 2a^2ydy = d(0)  = 0$$
+      \item 于是$$\frac{dy}{dx} = -\frac{b^2x}{a^2y}$$
+      \item 故可以用$b^2x$与$a^2y$的相对大小作为条件, 区别区域1,2. 我的实现中, 斜率小于-1的区域标为区域1, 与课程PPT中的编号相反
+    \end{itemize}
+  \end{itemize}
+  \item 算法流程
+  \begin{enumerate}
+    \item 框架代码指定参数为椭圆的矩形包围框左上角和右下角顶点坐标, 因此需要首先根据给定的参数, 计算出符合中点圆生成算法的参数, 包括椭圆的半长轴a, 半短轴b, 以及进行平移变换需要的中心点坐标$center = (x_c,y_c)$
+    \item 参考\cite{rog_2002}, 首先计算一些辅助量, 以便加速之后的计算, 并使得算式更加简洁
+    \item 设定初始点为$(a,0)$, 作为起始点, 并计算初始决策参数$$p1_0 = 2b^2x(x-1)+b^2/2+2a^2(1-b^2)$$
+    \item 当$b^2x>a^2y$时, 为区域1, 逆时针移动, 不断进行如下迭代\begin{enumerate}
+    \item 绘制点$(x,y)$
+      \item 若$p1_k<0$, 选择像素$(x_k, y_{k+1})$, 并\begin{align}
+        \begin{split}
+          x_{k+1} &= x_k\\
+          y_{k+1} &= y_k+1\\
+          p1_{k+1} &= p1_{k} + 4a^2y + 2a^2\\
+        \end{split}
+      \end{align}
+      \item 若$p1_k\geq 0$, 选择像素$(x_{k+1}, y_{k+1})$, 并\begin{align}
+        \begin{split}
+          x_{k+1} &= x_k - 1\\
+          y_{k+1} &= y_k+1\\
+          p1_{k+1} &= p1_{k} + 4a^2y + 2a^2 - 4b^2x\\
+        \end{split}
+      \end{align}
+    \end{enumerate}
+    \item 计算区域2的初始决策参数$$p2_0 = 2b^2(x^2+1)-4b^2x+2a^2(y^2+y-b^2) +a^2/2$$
+    \item 当$b^2x\leq ^2y$且$x\geq 0$时, 为区域2, 逆时针移动, 不断进行如下迭代\begin{enumerate}
+    \item 绘制点$(x,y)$
+      \item 若$p2_k<0$, 选择像素$(x_k, y_{k+1})$, 并\begin{align}
+        \begin{split}
+          x_{k+1} &= x_k - 1\\
+          y_{k+1} &= y_k+1\\
+          p2_{k+1} &= p2_{k} - 4b^2x + 2b^2 + 4a^2y\\
+        \end{split}
+      \end{align}
+      \item 若$p1_k\geq 0$, 选择像素$(x_{k+1}, y_{k+1})$, 并\begin{align}
+        \begin{split}
+          x_{k+1} &= x_k - 1\\
+          y_{k+1} &= y_k\\
+          p2_{k+1} &= p2_{k} - 4b^2x + 2b^2\\
+        \end{split}
+      \end{align}
+    \end{enumerate}
+    \item 之后首先沿x轴对称, 得到右半椭圆, 之后再沿y轴对称, 得到完整的椭圆, 最后使用之前求得的center坐标进行平移, 得到最终的绘制目标
+  \end{enumerate}
+  \item 我的理解\begin{enumerate}
+    \item 优雅的代码: 使用lambda表达式, 1行一个变换, 利用python list的+=运算符, 简单地完成整个变换过程, 得到整个椭圆.
+  \end{enumerate}
+  \item 相关代码\begin{enumerate}
+    \item 计算算法所需参数
+    \begin{lstlisting}[language={Python}] 
+      x0, y0 = p_list[0]
+      x1, y1 = p_list[1]
+      a = abs(x1 - x0) / 2
+      b = abs(y1 - y0) / 2
+      center = [round((x0 + x1)/2), round((y0 + y1)/2)]\end{lstlisting}
+    \item 准备辅助量
+    \begin{lstlisting}[language={Python}] 
+      result = []
+      x = round(a)
+      y = round(0)
+      taa = a * a
+      t2aa = 2 * taa
+      t4aa = 2 * t2aa
+      tbb = b * b
+      t2bb = 2 * tbb
+      t4bb = 2 * t2bb
+      t2abb = a * t2bb
+      t2bbx = t2bb * x
+      tx = x\end{lstlisting}
+    \item 算法主体
+    \begin{lstlisting}[language={Python}] 
+      d1 = t2bbx *  (x-1) + tbb/2 + t2aa * (1-tbb)
+      while t2bb * tx > t2aa * y:
+          result.append((x, y))
+          if d1 < 0:
+              y = y + 1
+              d1 = d1 + t4aa * y + t2aa
+              tx = x - 1
+          else:
+              x =  x - 1
+              y =  y + 1
+              d1 = d1 - t4bb * x + t4aa * y + t2aa
+              tx = x
+      
+      d2 = t2bb * (x*x +1) - t4bb*x+t2aa*(y*y+y-tbb) + taa/2
+      while x>=0:
+          result.append((x, y))
+          if d2 < 0:
+              x = x - 1
+              y = y + 1
+              d2 = d2 + t4aa * y - t4bb*x + t2bb
+          else:
+              x =  x - 1
+              d2 = d2 - t4bb * x + t2bb\end{lstlisting}
+    \item 对称与平移变换
+    \begin{lstlisting}[language={Python}] 
+      result += list(map(lambda x :(x[0],-x[1]), result))
+      result += list(map(lambda x :(-x[0],x[1]), result))
+      result = list(map(lambda x: (x[0] + center[0], x[1] + center[1]), result))\end{lstlisting}
+  \end{enumerate}
 \end{itemize}
 \subsection{DDA算法绘制线段}
 \begin{itemize}
@@ -239,6 +377,6 @@
 
 \bibliographystyle{plain}%
 %"xxx" should be your citing file's name.
-\bibliography{xxx}
+\bibliography{myref}
 
 \end{document}
