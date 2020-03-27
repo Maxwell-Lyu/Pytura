@@ -177,8 +177,14 @@ def draw_curve(p_list: list, algorithm, isQuick = False):
     :param algorithm: (string) 绘制使用的算法，包括'Bezier'和'B-spline'（三次均匀B样条曲线，曲线不必经过首末控制点）
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 绘制结果的像素点坐标列表
     """
-    nPoints = len(p_list) * 20
-    if not isQuick: nPoints *= 20
+    nPoints = 0
+    for i in range(len(p_list) - 1):
+        nPoints += max(abs(p_list[i][0] - p_list[i+1][0]), abs(p_list[i][1] - p_list[i+1][1]))
+    if isQuick: nPoints = int(nPoints / 10)
+    else: nPoints *= 2
+    # nPoints = len(p_list) * 20
+    # print(nPoints)
+    # if not isQuick: nPoints *= 20
     if algorithm == 'Bezier':
         n = p_list.__len__() - 1
         result = [p_list[0]]
