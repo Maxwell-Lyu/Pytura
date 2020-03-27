@@ -126,9 +126,12 @@ class MyCanvas(QGraphicsView):
         maxPoint = max(self.temp_item.p_list)
         self.edit_p_list = self.item_dict[self.selected_id].p_list
         new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
-        self.item_dict[self.selected_id].p_list = new_p_list
-        self.main_window.log_widget.do('edit', self.item_dict[self.selected_id], self.edit_p_list)
-        self.item_dict[self.selected_id].isDirty = True
+        if len(new_p_list) > 0:
+            self.item_dict[self.selected_id].p_list = new_p_list
+            self.main_window.log_widget.do('edit', self.item_dict[self.selected_id], self.edit_p_list)
+            self.item_dict[self.selected_id].isDirty = True
+        else:
+            self.main_window.delete_action()
         self.scene().removeItem(self.temp_item)
         self.updateScene([self.sceneRect()])
 
