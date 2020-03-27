@@ -369,9 +369,9 @@
               return p_list[i]
           else:
               return addPoint(bezier(p_list, r - 1, i, u), bezier(p_list, r - 1, i + 1, u), u)
-      pass
-    \end{lstlisting}
+      pass    \end{lstlisting}
     该函数基本与递归计算的公式相同. 当r==0时, 说明递归结束, 直接返回i指定的控制点坐标, 否则使用点i与点i+1(递归过程中, i并非是控制点坐标, 而是$P_{i}^r$), 与参量u按照addPoint进行计算
+    \item 之后, 使用lambda表达式完成舍入, 之后set()完成点的去重, 为绘图做优化, 最后构造list用作返回值
   \end{enumerate}
   \item 我的理解: Bezier曲线上的点, 实际上来自于控制点的线性和, 而每个控制点都有受u控制的权重. 对于一个确定次数的Bezier曲线, 实际上可以使用一个预先计算好的多项式代替递归过程, 以加速计算\\
   该加速策略在我的Bezier曲线中没有使用, 因为我的Bezier曲线没有限制控制点的个数, 因此这一加速策略仍然需要每次计算多项式, 并不会显著降低开销
@@ -387,8 +387,7 @@
         result = [p_list[0]]
         for i in range(1, nPoints):
             result.append(bezier(p_list, n, 0, float(i) / (nPoints - 1)))
-        return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))
-\end{lstlisting}
+        return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))\end{lstlisting}
 \end{itemize}
 \subsection{3次均匀B样条算法绘制线段}
 \begin{itemize}
@@ -431,20 +430,224 @@
     A3 = (-3 * _t * _t * _t + 3 * _t * _t + 3 * _t + 1) / 6.0
     A4 = _t * _t * _t / 6.0
     return (A1 * p[i-3][0] + A2 * p[i-2][0] + A3 * p[i-1][0] + A4 * p[i][0],
-            A1 * p[i-3][1] + A2 * p[i-2][1] + A3 * p[i-1][1] + A4 * p[i][1])
-\end{lstlisting}
+            A1 * p[i-3][1] + A2 * p[i-2][1] + A3 * p[i-1][1] + A4 * p[i][1])\end{lstlisting}
 \begin{lstlisting}[language={Python}] 
   elif algorithm == 'B-spline':
       result = []
       for i in range(0, nPoints):
           t = i / nPoints
           result.append(bSpline(p_list, t))
-      return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))
-\end{lstlisting}
+      return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))\end{lstlisting}
 \end{itemize}
-\subsection{\dots}
-\dots
-		
+\subsection{平移变换}
+\begin{itemize}
+  \item 算法介绍\\
+  平移变换实际上就是将原坐标$(x,y)$, 结合传入的参数$dx$, $dy$, 映射为$(x+dx, y+dy)$
+  \item 算法流程\\
+  一行lambda表达式搞定(也许能算是优雅的代码)\\
+  使用Lambda表达式构造map, 也就是映射. 在Python3中, 无法直接使用一个lambda表达式, 从一个list构造其对应的list, 于是需要先构造map, 之后将其转换为list
+  \item 相关代码
+  \begin{lstlisting}[language={Python}] 
+    return list(map(lambda p: (p[0] + dx, p[1] + dy), p_list))\end{lstlisting}
+\end{itemize}
+\subsection{旋转变换}
+\begin{itemize}
+  \item 算法介绍\\
+  旋转变换也是线性变换, 根据PPT内容, 任意基准点$(x_r, y_r)$的旋转变换, 其结果为
+  $$\begin{cases}
+    x' &= x_r + (x-x_r)\cos\theta - (y-y_r)\sin\theta\\
+    y' &= y_r + (x-x_r)\sin\theta + (y-y_r)\cos\theta
+  \end{cases}$$
+  \item 算法流程\begin{itemize}
+    \item 由于要求的传入参数是角度, 需要首先计算出弧度制, 才能使用math库函数计算sin和cos
+    \item 一行lambda表达式搞定
+  \end{itemize}
+  \item 相关代码
+  \begin{lstlisting}[language={Python}]     
+    rad = math.radians(r)
+    sin, cos = math.sin(rad), math.cos(rad)
+    return list(map(lambda p: (round(x + (p[0] - x)*cos -(p[1]-y)*sin), round(y + (p[0] - x)*sin +(p[1]-y)*cos)), p_list))\end{lstlisting}
+\end{itemize}
+
+\subsection{Cohen-Sutherland算法裁剪线段}
+\begin{itemize}
+  \item 算法介绍\\
+  Cohen-Sutherland算法\cite{rog_2002}的核心, 是端点编码, 使用一个4位的编码描述线段的端点, 相对于给定的裁剪边界的位置信息:\begin{enumerate}
+    \item 位1: 左边界以左取1, 否则取0
+    \item 位2: 右边界以右取1, 否则取0
+    \item 位3: 下边界以下取1, 否则取0
+    \item 位4: 上边界以上取1, 否则取0
+  \end{enumerate}
+  获得位置信息之后, 通过两个端点的位置信息计算, 可得线段与窗口的位置关系\begin{enumerate}
+    \item 两端点均为0000, 则线段完全在内部: 可以直接返回, 无需裁剪
+    \item 两端点区域码逻辑与操作, 结果不为0000: 可以直接丢弃
+  \end{enumerate}
+  对于不满足这些特殊情况的点, 需要依次"左-右-上-下"与边界进行位置关系的判断. 当区域码相应的位为1, 则求交点, 用交点代替原来的点, 重新计算区域码, 直到剩下的线段完全在窗口内\\
+  \item 算法流程与代码\begin{enumerate}
+    \item 首先, 计算区域码, 采用位运算的方法进行
+    \begin{lstlisting}[language={Python}] 
+  def getPCode(x, y, window):
+      pCodeList = []
+      pCodeList.append(x < window[0])
+      pCodeList.append(x > window[1])
+      pCodeList.append(y < window[2])
+      pCodeList.append(y > window[3])
+      p = 0
+      for i in pCodeList:
+          p = (p << 1) | i
+      return p\end{lstlisting}
+    \item 判断线段与窗口的位置关系: 2: 完全在内; 1: 部分在内; 0: 完全在外\\
+    \begin{lstlisting}[language={Python}] 
+      def getFlag(pCode1, pCode2):
+    return ((pCode1 == 0) & (pCode2 == 0)) + (pCode1 & pCode2 == 0)\end{lstlisting}
+    这一步其实是用了一些骚操作, 接下来会解释骚操作是怎么work的\begin{itemize}
+      \item +号前条件为区域码均为0000, +号后条件为区域码逻辑与为0
+      \item 若二者都不成立, 因后者不成立, 已经可以判断完全在窗口外, 此时会返回0
+      \item 若前者成立后者不成立? 这种情况是不可能的
+      \item 后者成立前者不成立, 说明部分在内, 返回1
+      \item 若皆成立, 因前者成立, 已经可以判断完全在内部, 此时会返回2
+    \end{itemize}
+    这牺牲了可读性, 实际上也并未有显著的效率提升, 但是我觉得很有意思, 就写了
+    \item 若位置关系为2, 直接返回原list, 这里其实是拷贝了一份
+    \begin{lstlisting}[language={Python}] 
+      if vFlag == 2: 
+          return [(x1, y1), (x2, y2)]
+    \end{lstlisting}
+    \item 若位置关系为1\begin{enumerate}
+      \item 首先判断线段的指向, 水平(iFlag = 0), 水平(iFlag = 0), 垂直(iFlag = -1), 其余(iFlag = 1). 接下来对于每个方向, 都进行下面的操作
+      \item 如果点1在内部(对于该方向), 先交换点1点2, 这样可以节约代码
+      \item 如果不是垂直于x轴的线段, 且待判断的方向为左或右方向, 则使用该方向裁剪线段, 同时更新区域码
+      \item 如果不是平行于x轴的线段, 且待判断的方向为上或下方向, 则使用该方向裁剪线段, 同时更新区域码
+      \item 重新计算线段于窗口的位置关系, 若为1, 继续裁剪; 若为2, 返回当前的结果; 若为0, 返回空
+    \end{enumerate}
+    \begin{lstlisting}[language={Python}] 
+  elif vFlag == 1:
+      iFlag = 1
+      if x1 == x2:
+          iFlag = -1
+      elif y1 == y2:
+          iFlag = 0
+      while(vFlag == 1):
+          for i in range(1,5):
+              if (pCode1 >> (4 - i)) != (pCode2 >> (4 - i)):
+                  if (pCode1 >> (4 - i)) == 0:
+                      x1, y1, x2, y2 = x2, y2, x1, y1
+                      pCode1, pCode2 = pCode2, pCode1
+                  if iFlag != -1 and i <= 2:
+                      y1 = (y2 - y1) / (x2 - x1) * (window[i - 1] - x1) + y1
+                      x1 = window[i - 1]
+                      pCode1 = getPCode(x1, y1, window)
+                  if iFlag != 0 and i > 2:
+                      if iFlag != -1:
+                          x1 = (x2 - x1) / (y2 - y1) * (window[i - 1] - y1) + x1
+                      y1 = window[i - 1]
+                      pCode1 = getPCode(x1, y1, window)
+                  vFlag = getFlag(pCode1, pCode2)
+                  if vFlag == 2:             
+                      return [(round(x1), round(y1)), (round(x2), round(y2))]
+                  elif vFlag == 0: 
+                      return []\end{lstlisting}
+    \item 若位置关系为0, 返回空
+    \begin{lstlisting}[language={Python}] 
+  else:
+    return []\end{lstlisting}
+    \end{enumerate}
+  \item 我的理解: 该算法核心有2部分\begin{itemize}
+    \item 区域码: 判断点与窗口的位置关系, 并基于此, 判断线段与窗口的位置关系
+    \item 裁剪: 在各个方向裁剪求交点
+  \end{itemize}
+\end{itemize}
+
+\subsection{Liang-Barsky算法裁剪线段}
+\begin{itemize}
+  \item 算法介绍\\
+  Liang-Barsky算法\cite{rog_2002}, 其出发点是将2维裁剪问题化简为1维裁剪问题. \\
+  该算法将带裁剪线段和裁剪窗口均看作一维点集, 其裁剪结果就是两个点集的交集.\\
+  线段所在直线L与裁剪窗口的2交点为$Q_1Q_2$, 称之为诱导窗口, 而使用此诱导窗口对线段裁剪的结果, 与矩形窗口裁剪的结果是相同的\\
+  该裁剪有参数化的裁剪条件\begin{align}
+    \begin{split}
+      x_{min} \leq x_1 + t\Delta x\leq x_{max}
+      y_{min} \leq y_1 + t\Delta y\leq y_{max}
+    \end{split}
+  \end{align}
+  参数化表示为$$t\times d_k\leq q_k$$
+  定义参数$d, q$, 分别对应于左右上下边界, 有
+  \begin{align}
+    \begin{split}
+      d_1 &= -\Delta x, \quad q_1 = x_1-x_{min}\\
+      d_2 &= \Delta x, \quad q_2 = x_{max}-x_1\\
+      d_3 &= -\Delta y, \quad q_3 = y_1-y_{min}\\
+      d_4 &= \Delta y, \quad q_4 = y_{max}-y_1\\
+    \end{split}
+  \end{align}
+  此处PPT中与教材\cite{sun_2006}的叙述不同, PPT与教材没有加符号, 我认为是不妥的\\
+  以此作为条件, 有如下判断\begin{itemize}
+    \item $d_k=0$, 线段平行于裁剪边界之一\begin{itemize}
+      \item $q_k<0$, 说明完全在边界之外
+      \item $q_k\geq 0$, 说明线段平行于裁剪边界, 且在窗口内
+    \end{itemize}
+    \item $d_k<0$, 线段从边界外部延伸到内部
+    \item $d_k>0$, 线段从边界内部延伸到外部
+  \end{itemize}
+  \item 根据这些判断, 当$d_k\ne 0$时, 计算线段与边界$k$或其延长线交点的$t$值$$t=q_k/d_k$$
+  \item 线段首先拥有$[t1,t2]$值区间[0,1], 表示不裁剪的整个线段, 之后的计算中, 使用如下规则, 使用每个交点的$t$值更新该区间\begin{itemize}
+    \item $t_1>t_2$, 线段完全在窗口外, 抛弃之, 返回空
+    \item $t_1\leq t_2$, 端点将确定裁剪的端点\begin{itemize}
+      \item $t_1$值由线段从外而内遇到的矩形边界确定, $t_1$取0与各边界$t$值的最大值
+      \item $t_2$值由线段从内而外遇到的矩形边界确定, $t_2$取1与各边界$t$值的最小值
+    \end{itemize}
+  \end{itemize}
+  \item 完成整个过程后, 使用最终得到的$[t_1, t_2]$计算裁剪结果并返回
+  \item 算法流程与代码\begin{enumerate}
+    \item 算法中最重要的是函数clipt, 该函数使用传入的$d_k$与$q_k$值, 对线段在4个方向上进行裁剪, 并更新$t$取值区间
+    \begin{lstlisting}[language={Python}] 
+  def clipt(d, q, t_list): 
+      visible = True
+      if d == 0 and q < 0:
+          visible = False
+      elif d < 0:
+          t = float(q) / d
+          if t > t_list[1]:
+              visible = False
+          elif t > t_list[0]:
+              t_list[0] = t
+      elif d > 0:
+          t = float(q) / d
+          if t < t_list[0]:
+              visible = False
+          elif t < t_list[1]:
+              t_list[1] = t
+      return visible\end{lstlisting}\begin{enumerate}
+      \item 首先初始化返回值为True, 表示线段课件, 存在一个部分位于裁剪窗口之内
+      \item 如果$d=0$且$q<0$, 说明线段完全位于边界之外, 返回值设置为False
+      \item 如果$d<0$, 由外向内延伸, 本次计算的$t$值将用来更新$t_1$值; 若更新后出现$t_1>t_2$, 设置返回值为False
+      \item 如果$d>0$, 由内向外延伸, 本次计算的$t$值将用来更新$t_2$值; 若更新后出现$t_1>t_2$, 设置返回值为False
+      \item 函数返回, 携带之前最后一次设置的返回值
+    \end{enumerate}
+    \item 主函数, 将依次在四个边界调用cilpt\begin{itemize}
+      \item 若任意一次的返回值为False, 立刻结束, 并返回空
+      \item 若均为True, 执行裁剪, 使用$[t_1,t_2]$区间, 并返回舍入后的2个裁剪后端点
+    \end{itemize}
+  \begin{lstlisting}[language={Python}] 
+    elif algorithm == 'Liang-Barsky':
+        t = [float(0), float(1)]
+        deltax = float(x2 - x1)
+        if clipt(-deltax, x1 - x_min, t):
+            if clipt(deltax, x_max - x1, t):
+                deltay = float(y2 - y1)
+                if clipt(-deltay, y1 - y_min, t):
+                    if clipt(deltay, y_max - y1, t):
+                        if t[1] < 1:
+                            x2 = x1 + t[1] * deltax
+                            y2 = y1 + t[1] * deltay
+                        if t[0] > 0:
+                            x1 = x1 + t[0] * deltax
+                            y1 = y1 + t[0] * deltay
+                        return [(round(x1), round(y1)), (round(x2), round(y2))]\end{lstlisting}
+  \end{enumerate}
+  \item 我的理解: 该算法的思路是, 用线段所在直线与窗口, 计算线段在该窗口下的参数$t$区间, 各个边界算得到的区间求交集. 这一方法使得算法在每个边界至多进行一次求交点运算(实际上是除法运算), 效率较高
+\end{itemize}
+
 \section{系统介绍}
 \dots
 
