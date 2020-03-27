@@ -342,28 +342,104 @@
       result = list(map(lambda x: (x[0] + center[0], x[1] + center[1]), result))\end{lstlisting}
   \end{enumerate}
 \end{itemize}
-\subsection{DDA算法绘制线段}
+\subsection{Bezier算法绘制曲线}
 \begin{itemize}
   \item 算法介绍\\
+  Bézier曲线是通过一组多边折线的各顶点唯一定义出来的。曲线的形状趋向于多边折线的形状，改变多边折线的顶点坐标位置和改变曲线的形状有紧密的联系。因此，多边折线有常称为特征多边形，其顶点称为控制顶点。一般，Bézier曲线段可拟合任何数目的控制顶点。Bézier曲线段逼近这些控制顶点，且它们的相关位置决定了Bézier多项式的次数。类似插值样条，Bézier曲线可以由给定边界条件、特征矩阵或混合函数决定，对一般Bézier曲线，方便的是混合函数形式。\\
+  在我的实现中, 我并未对用户输入点的个数做限制, 也没有处理分段, 理论上可以绘制任意数量控制点的Bezier曲线. 实际使用中, 控制点达到6个时, 就能注意到明显的卡顿, 绘制曲线的过程等待超过1秒\\
+  假设给出$n+1$个控制顶点位置$P_i=(x_i,y_i,z_i)$, 这些坐标点混合产生下列位置向量$P(u)$, 用于描述$P_0$和$P_n$间的逼近Bezier多项式函数的路径
+  $$P_(u)=\sum_{i=0}^nP_iBEZ_{i,n}(u)(0\leq u\leq 1)$$
+  利用 Bernstein 基函数的降(升)阶公式，得出 Bézier 曲线上点的坐标位置的有效方法 是使用递归计算。用递归计算定义的 Bézier 混合函数为\cite{sun_2006}
+  $$BEZ_{i,n}(u)=(1-u)BEZ_{i, n-1}(u)+ uBEZ_{i-1,n-1}(u)$$
+  这一函数的递归定义形式, 恰好可以用来构造递归函数的定义, 使用该递归函数即可对Bezier曲线进行光栅化\\
+  另外一个需要考虑的问题, 是参量u的取值. 在该方程的定义中, 参量u可取连续值, 而实际的计算中, 参量u不可能取得连续的值, 因此需要确定一个nPoint, 即[0,1]区间中, u均匀取值的个数. 该step必须足够小, 使得绘制出来的曲线在显示上不断开. 为保证绘制效率, 该参量亦不能太小.
   \item 算法流程
   \begin{enumerate}
-    \item 
+    \item 首先, 计算参量u使用的nPoint. 我的算法中, 该步骤是一个创新点:\begin{enumerate}
+      \item 遍历p\_list控制点坐标列表, 对每一对相邻的控制点, 计算其切比雪夫距离(x坐标差值 和 y坐标差值 中的最大值). 
+      \item 将算得的一系列距离相加.
+      \item 正常绘制时, 取nPoint为距离和的2倍, 在一般情况下, 能够保证不出现曲线断开的情况
+      \item 对于gui的变换部分, 由于涉及到快速的预览, 我加入了一个额外参数isQuick, 默认为False, 若为True, 则在距离和的基础上除以10, 作为参量u取值的个数, 以达到快速预览无卡顿的效果
+    \end{enumerate}
+    \item 使用上述nPoint, 用for循环在0~1间取参量u, 对每个参量u, 带入如下递归函数\begin{lstlisting}[language={Python}]
+      def addPoint(p1, p2, u): 
+          return ((1 - u) * p1[0] + u * p2[0], (1 - u) * p1[1] + u * p2[1])
+      def bezier(p_list, r, i, u):
+          if r == 0:
+              return p_list[i]
+          else:
+              return addPoint(bezier(p_list, r - 1, i, u), bezier(p_list, r - 1, i + 1, u), u)
+      pass
+    \end{lstlisting}
+    该函数基本与递归计算的公式相同. 当r==0时, 说明递归结束, 直接返回i指定的控制点坐标, 否则使用点i与点i+1(递归过程中, i并非是控制点坐标, 而是$P_{i}^r$), 与参量u按照addPoint进行计算
   \end{enumerate}
-  \item 我的理解: 
-  \item 相关代码
-  \begin{lstlisting}[language={Python}] 
+  \item 我的理解: Bezier曲线上的点, 实际上来自于控制点的线性和, 而每个控制点都有受u控制的权重. 对于一个确定次数的Bezier曲线, 实际上可以使用一个预先计算好的多项式代替递归过程, 以加速计算\\
+  该加速策略在我的Bezier曲线中没有使用, 因为我的Bezier曲线没有限制控制点的个数, 因此这一加速策略仍然需要每次计算多项式, 并不会显著降低开销
+  \item 相关代码如下
+  \begin{lstlisting}[language={Python}]
+    nPoints = 0
+    for i in range(len(p_list) - 1):
+        nPoints += max(abs(p_list[i][0] - p_list[i+1][0]), abs(p_list[i][1] - p_list[i+1][1]))
+    if isQuick: nPoints = int(nPoints / 10)
+    else: nPoints *= 2
+    if algorithm == 'Bezier':
+        n = p_list.__len__() - 1
+        result = [p_list[0]]
+        for i in range(1, nPoints):
+            result.append(bezier(p_list, n, 0, float(i) / (nPoints - 1)))
+        return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))
 \end{lstlisting}
 \end{itemize}
-\subsection{DDA算法绘制线段}
+\subsection{3次均匀B样条算法绘制线段}
 \begin{itemize}
   \item 算法介绍\\
+  B样条曲线, 是Bézier曲线曲面的拓广. 相比于Bezier曲线, B样条对局部的控制能力强, 因此对实际出现的曲线的你和能力也较高. 但是同时, 也有着形状构造过程复杂, 初等曲线拟合能力差的缺点. \\
+  本次实验中的3次均匀B样条, 与3次Bezier曲线比较相似, 使用如下递推公式进行
+  $$N_{i,k}(u)=\frac{u-i}{k-1}N_{i,k-1}(u) + \frac{i+k-u}{k-1}N_{i+1,k-1}(u), k>1$$
+  由于已经确定是3次, n=3, 利用均匀B样条曲线的平移性, 没有必要再使用递归方法, 而可以通过我在Bezier曲线时就设想的优化方案, 将多项式直接求出, 并硬编码在程序当中, 计算时直接带入u的值即可.\cite{cod_2006}\\
+  $$\mathbf{S}_i(t) = \begin{bmatrix} \_t^3 & \_t^2 & \_t & 1 \end{bmatrix} \frac{1}{6} \begin{bmatrix} -1 &  3 & -3 & 1 \\  3 & -6 &  3 & 0 \\ -3 &  0 &  3 & 0 \\  1 &  4 &  1 & 0 \end{bmatrix} \begin{bmatrix} \mathbf{P}_{i-3} \\ \mathbf{P}_{i-2} \\ \mathbf{P}_{i-1} \\ \mathbf{P}_{i} \end{bmatrix}$$
+  其中$3\leq i \leq n$, $t\in [0,1]$\\
+  $i$的选取与$t$有关, 此处$t$在递推公式中为$u$, 需满足
+  $$u_{i}\leq t <u_{i+1}$$
+  而用于带入上述矩阵的$\_t$则是另外一回事, 其与$t$有如下转换
+  $$\_t=\frac{t-u_i}{\Delta}=\frac{t-u_i}{u_{i+1}-u_i}$$
+  于是, 只需首先构造$\{u_i\}$, 并使用Bezier曲线中类似的参量取值方法, 对每一个参量的取值$t$, 寻找其对应的$i$, 带入上述多项式中, 即可完成光栅化
   \item 算法流程
   \begin{enumerate}
-    \item 
+    \item 起始部分与Bezier曲线的绘制共用, 选取参量, 这里不做介绍了
+    \item 构造$\{u_i\}$列表, 形如公式6-231\cite{sun_2006}, 并归一化, 取值在0~1之间. 头尾的几个值其实并不会被使用, 其用途是与$i$的取值范围统一, 避免下标计算的麻烦
+    \item 之后, 根据$t$的取值, 在$\{u_i\}$中查询, 找到合适的$i$
+    \item 计算$\_t$, 使用$\_t$计算行向量$$\begin{bmatrix} \_t^3 & \_t^2 & \_t & 1 \end{bmatrix}$$与系数矩阵$$\frac{1}{6} \begin{bmatrix} -1 &  3 & -3 & 1 \\  3 & -6 &  3 & 0 \\ -3 &  0 &  3 & 0 \\  1 &  4 &  1 & 0 \end{bmatrix}$$的乘积$S$
+    \item 最后计算$S_i(t)$, 即该参量$t$下, 绘制的点
   \end{enumerate}
-  \item 我的理解: 
+  \item 我的理解: 3次均匀B样条有些类似3次Bezier曲线. 在Bezier曲线中, 一共只有4个控制点, 而在3次均匀B样条曲线中, 每4个连续的控制点都将使用由行向量$S$指定的权重, 计算出一些点, 而这些点拼接成了最终的b样条曲线\\
+  这解释了B样条曲线局部控制能力强的原因, 因为每个控制点将会涉及到前后$3\Delta$的$u$范围内的点绘制, 而在Bezier中, 将影响整条曲线的绘制\\
+  另外, B样条曲线至少需要4个控制点才能进行绘制
   \item 相关代码
   \begin{lstlisting}[language={Python}] 
+    def bSpline(p, t):
+    n = p.__len__() - 1
+    m = 3 + n + 1
+    step = 1 / (m - 2 * 3)
+    u = [0, 0, 0] + [_u * step for _u in range(0, m - 2 * 3 + 1)] + [1, 1, 1]
+    for i in range(3, m - 3):
+        if u[i] <= t and t < u[i + 1]:
+            break
+    _t = (t - u[i]) / (u[i + 1] - u[i])
+    A1 = (1 - _t) * (1 - _t) * (1 - _t) / 6.0
+    A2 = (3 * _t * _t * _t - 6 * _t * _t + 4) / 6.0
+    A3 = (-3 * _t * _t * _t + 3 * _t * _t + 3 * _t + 1) / 6.0
+    A4 = _t * _t * _t / 6.0
+    return (A1 * p[i-3][0] + A2 * p[i-2][0] + A3 * p[i-1][0] + A4 * p[i][0],
+            A1 * p[i-3][1] + A2 * p[i-2][1] + A3 * p[i-1][1] + A4 * p[i][1])
+\end{lstlisting}
+\begin{lstlisting}[language={Python}] 
+  elif algorithm == 'B-spline':
+      result = []
+      for i in range(0, nPoints):
+          t = i / nPoints
+          result.append(bSpline(p_list, t))
+      return list(set(map(lambda p: (round(p[0]), round(p[1])), result)))
 \end{lstlisting}
 \end{itemize}
 \subsection{\dots}
