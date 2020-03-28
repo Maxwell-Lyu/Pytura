@@ -698,7 +698,8 @@ class MainWindow(QMainWindow):
     def reset_canvas_action(self):
         if QMessageBox.question(self,'重置画布', "您确认要重置画布吗？\n该修改不可撤销！", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
             self.canvas_widget.clear_selection()
-            self.scene.clear()
+            for item in self.canvas_widget.item_dict.values():
+                self.scene.removeItem(item)
             self.list_widget.clear()
             self.canvas_widget.item_dict.clear()
             self.log_widget.clear()
