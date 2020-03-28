@@ -147,8 +147,8 @@ class MyCanvas(QGraphicsView):
             self.set_select('')
             return item
 
-    def selection_changed(self, selected: str):
-        # self.main_window.statusBar().showMessage('图元选择： %s' % selected)
+    def selection_changed(self, selectedItem: QListWidgetItem):
+        selected = selectedItem.text()
         if self.selected_id != '':
             self.item_dict[self.selected_id].selected = False
             self.item_dict[self.selected_id].update()
@@ -648,7 +648,7 @@ class MainWindow(QMainWindow):
         self.pull_btn				        .clicked.connect(self.pull_action				  )
         self.push_btn				        .clicked.connect(self.push_action				  )
 
-        self.list_widget.currentTextChanged.connect(self.canvas_widget.selection_changed)
+        self.list_widget.itemClicked.connect(self.canvas_widget.selection_changed)
         self.canvas_widget.statusChanged.connect(self.updateUI)
         self.canvas_widget.selectChanged.connect(self.updateUI)
 
