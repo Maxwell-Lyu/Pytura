@@ -68,6 +68,7 @@
 \maketitle
 
 \tableofcontents
+\newpage
 
 \section{综述}
 \subsection{进度综述}
@@ -91,7 +92,7 @@
       \item [界面]2种按钮样式, 4种按钮状态
     \end{itemize}
   \end{itemize}
-  此后的部分, 已经撰写了项目综述和算法介绍, 而系统介绍暂时未撰写, 有待之后完成
+  此后的部分, 已经撰写了项目综述, 算法介绍和系统介绍CLI, 而系统介绍GUI暂时未撰写, 有待之后完成
 \subsection{项目综述}
   本项目为2020年春季计算机图形学课程的课程设计, 以Python3为编写语言, 旨在通过实际的项目实践, 熟悉本课程教学内容, 掌握重点的图形绘制算法.\\
   项目的成果包括以下3个部分
@@ -651,7 +652,44 @@
   \item 我的理解: 该算法的思路是, 用线段所在直线与窗口, 计算线段在该窗口下的参数$t$区间, 各个边界算得到的区间求交集. 这一方法使得算法在每个边界至多进行一次求交点运算(实际上是除法运算), 效率较高
 \end{itemize}
 
-\section{系统介绍}
+\section{系统介绍: CLI}
+\subsection{简述}
+CLI系统基本直接使用框架代码, 因此框架已经给出部分无需介绍. 对于不同的图元和操作类型, 我将对我做出的实现进行介绍
+\subsection{绘制命令}
+\begin{itemize}
+  \item 2控制点图元: 直接复制, 给定的线段绘制的指令解析, 也适用于椭圆绘制, 除了不需要读取行尾的算法字符串
+  \item 多控制点图元: 读取控制点坐标列表使用一个for循环, step = 2
+\end{itemize}
+\subsection{变换命令}
+\begin{itemize}
+  \item 平移, 旋转, 缩放的变换, 其流程如下\begin{itemize}
+    \item 读入图元id和变换参数
+    \item 参数和图元p\_list, 用于执行变换
+    \item 变换的返回值是新的p\_list, 以此替代图元原有的p\_list
+  \end{itemize}
+  \item 裁剪首先也要做线性变换的所有处理, 另外有2个专有过程\begin{enumerate}
+    \item 以防万一, 将裁剪窗口的坐标做检查和矫正:  \begin{lstlisting}[language={Python}]  
+      x0, y0, x1, x1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)\end{lstlisting}
+      \item 考虑线段完全在裁剪窗口外的情况, 需要特殊处理\begin{itemize}
+        \item 我的裁剪算法, 在这种情况下会返回空列表
+        \item 如果裁剪结果p\_list = [], 则删除该图元
+      \end{itemize}
+    \end{enumerate}
+\end{itemize}
+\subsection{控制命令}
+\begin{itemize}
+  \item 调整画笔颜色: CLI框架已经实现
+  \item 保存画布: CLI框架已基本实现, 我添加了其他图元类的处理, 与线段的处理类似, 由图元p\_list和算法, 交给alg光栅化, 返回像素列表, 使用先前指定的颜色绘制
+  \item 重置画布: 在框架代码的基础上, 添加了清空图元dict的过程
+\end{itemize}
+
+\section{系统介绍: GUI}
+\subsection{简述}
+\begin{itemize}
+  \item 系统名: PYTURA\\
+  语源Pintura(西班牙语, 意为绘画), 与Python的PY糅合
+  \item 
+\end{itemize}
 \dots
 
 \section{总结}
