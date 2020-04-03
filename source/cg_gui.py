@@ -180,7 +180,7 @@ class MyCanvas(QGraphicsView):
             dx = self.edit_data[1][0] - self.edit_data[0][0]
             dy = self.edit_data[1][1] - self.edit_data[0][1]
             if dx:
-                new_p_list = alg.rotate(self.edit_p_list, self.edit_data[0][0], self.edit_data[0][1], math.degrees(math.atan2(dy, dx)))
+                new_p_list = alg.rotate(self.edit_p_list, self.edit_data[0][0], self.edit_data[0][1], -math.degrees(math.atan2(dy, dx)))
                 self.item_dict[self.selected_id].p_list = new_p_list
                 self.item_dict[self.selected_id].isDirty = True
             pass
