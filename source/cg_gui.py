@@ -478,7 +478,7 @@ class MainWindow(QMainWindow):
         self.canvas_widget.list_widget = self.list_widget
 
         self.log_widget = LogList(self, self.canvas_widget, self)
-
+        self.log_widget.setDisabled(True)
         # Tool Bar
         vbox_layout1 = QVBoxLayout()
         vbox_layout1.setSpacing(0)
