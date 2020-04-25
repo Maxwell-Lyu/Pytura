@@ -854,8 +854,8 @@ CLI系统基本直接使用框架代码, 因此框架已经给出部分无需介
 
 \section{总结}
 我的项目具有这些特色
+\subsection{额外的功能}
 \begin{itemize}
-  \item 额外的功能\begin{itemize}
     \item 撤销/重做功能: 受同学郑奘巍的启发(炫耀)添加的, 当然构思和代码是我自己独立完成的, 借鉴了创意\begin{itemize}
       \item 类似数据库当中的日志, 记录操作和相关的数据
       \item 构思: 三类操作, 其中绘制和删除互为逆操作. 变换相当于更改p\_list, 修改前后的list各备份一次即可
@@ -867,8 +867,10 @@ CLI系统基本直接使用框架代码, 因此框架已经给出部分无需介
       \item 高级玩法: 可以实现复制粘贴
     \end{itemize}
   \end{itemize}
-  \item 巧妙的设计: 充分使用事件机制, 自定义了一些事件, 实现各个控件之间的同步
-  \item 易用的交互: 直觉化的绘图操作\begin{itemize}
+  \subsection{巧妙的设计}
+  充分使用事件机制, 自定义了一些事件, 实现各个控件之间的同步
+  \subsection{易用的交互}
+  直觉化的绘图操作\begin{itemize}
     \item 2点图元: 一个拖拽就能绘制完成
     \item 多点图元: 这个交互我设计了一些时间, 最后发现双击结束相当优美
     \item 缩放: 兼顾中心点指定和比例控制的拖拽操作. 上手比较难, 但是功能性非常强
@@ -877,8 +879,8 @@ CLI系统基本直接使用框架代码, 因此框架已经给出部分无需介
     \item 裁剪: 裁剪框很实用的
     \item 按钮: 根据当前的status改变各个按钮的可用性提示, 比较友好. 各种状态给用户充分的视觉反馈, 爽就完事了
   \end{itemize}
-  \item 好看的界面: 前文已介绍, 敬请体验
-\end{itemize}
+\subsection{好看的界面}
+前文已介绍, 敬请体验
 
 \bibliographystyle{plain}%
 %"xxx" should be your citing file's name.
