@@ -780,7 +780,34 @@ CLI系统基本直接使用框架代码, 因此框架已经给出部分无需介
       \item selection\_changed: 点击事件发生在没有图元的地方时, 被调用, 修改当前的selected\_id, 更新图元的selected
     \end{itemize}
   \end{itemize}
-  \item 
+  \item [修改]MyItem: 图元类, 添加了一些成员和方法\begin{itemize}
+    \item item\_pixels: 为绘图加速添加, 图元未被修改时, 直接使用缓存在这里的像素列表绘制, 大大节约时间
+    \item selected: 选中与否, 决定是否绘制外框, 控制点和控制多边形
+    \item isDirty: 控制点是否被修改, 若true, 需要重新计算item\_pixels
+    \item isTemp: 是否为临时图元, 该参数转为曲线准备, 若true, 曲线将使用"快速绘制", 大大增加步长以加速绘制, 视觉效果上为点状虚线
+    \item color: 颜色
+    \item entry: 链接到图元列表的条目, 便于删除
+    \item paint方法进行了相应修改
+    \item drawControlPoint: 将控制点绘制出来, 在每个控制点周围有2像素宽的描边
+    \item drawControlPolygon: 将控制多边形绘制出来, 实际绘制的是一个折线
+  \end{itemize}
+  \item [添加]SplashScreen: 启动画面类\begin{itemize}
+    \item effect: 使用sleep计时, 让启动画面的图片淡入, 停留, 淡出
+    \item steps: 控制平滑程度
+    \item duration: 控制持续时间
+  \end{itemize}
+  \item [添加]LogItem: 历史记录项目类, 记录用户的一个操作\begin{itemize}
+    \item 绘制操作: 记录绘制的item
+    \item 变换操作: 记录旧的p\_list
+    \item 删除操作: 记录被删除的item
+  \end{itemize}
+  \item [添加]LogList: 历史记录列表类, 记录用户的操作历史\begin{itemize}
+    \item item\_ptr: 维护一个指针, 指出undo/redo的目标
+    \item do: 绘制, 变换, 删除操作都必须调用一次该接口, 以生成历史记录\\
+    值得注意的是, do操作将会在指针下创建新的操作, 原先在此位置及以后的操作记录均被丢弃
+    \item undo: 撤销一个操作, 指针向上移动. 如果指针消失, 代表没有可以撤销的操作
+    \item redo: 重做一个操作, 指针向下移动. 如果指针已经在最下, 意味着没有可以重做的操作
+  \end{itemize}
 \end{itemize}
 
 \subsection{项目框架}
