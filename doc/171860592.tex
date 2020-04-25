@@ -688,9 +688,121 @@ CLI系统基本直接使用框架代码, 因此框架已经给出部分无需介
 \begin{itemize}
   \item 系统名: PYTURA\\
   语源Pintura(西班牙语, 意为绘画), 与Python的PY糅合
+  \item 形象设计
+  \begin{figure}[htp]
+    \centering
+    \includegraphics[width=12cm]{asset/01.png}
+    \caption{项目形象设计}
+    \end{figure}
+  \item 功能列表\begin{enumerate}
+    \item 绘制\begin{itemize}
+      \item CLI的所有绘制功能
+      \item 2控制点的绘制, 采取"按下(点1)->拖动->释放(点2)"的方式实现
+      \item 多控制点的绘制, 采取"单击(点1~点n-1)->双击(点n, 结束)"的方式实现
+    \end{itemize}
+    \item 变换\begin{itemize}
+      \item 平移: 按住鼠标时, 被选中的图元将跟随鼠标同步移动
+      \item 旋转: 按下鼠标确定旋转中心, 拖动鼠标使图元旋转, 松开鼠标终止
+      \item 缩放: 按下鼠标确定缩放中心, 左右拖动鼠标, 左缩小右放大
+      \item 裁剪: 按下鼠标将绘制一个临时矩形框, 与2控制点绘制相同, 松开时将以此框作为窗口裁剪
+    \end{itemize}
+    \item 系统操作\begin{itemize}
+      \item 点击画布/右侧图元列表, 选中图元, 被选中的图元将会显示外框和控制点, 曲线还会显示控制多边形
+      \item 点击左侧吸管图标, 可以为接下来绘制的图元指定颜色, 当前颜色会在该按钮的背景显示
+      \item 点击"删除选中图元", 删除当前被选中的图元
+      \item 点击"保存为图像", 将打开对话框, 将当前画布保存为png格式的图像
+      \item 点击"保存图元命令", 将打开对话框, 将当前画布保存为文本文件, 格式与cg\_cli的图元命令相同, 一行一个命令
+      \item 点击"重置画布", 将会清空画布和图元列表, 以及操作历史记录
+      \item 点击"退出", 将退出程序
+      \item 点击"撤销", 将向前撤销一次操作
+      \item 点击"重做", 将重做一个被撤销的操作
+      \item 点击"将选中图元解析为命令", 被选中的图元将被解析成cg\_cli的图元命令, 并不包含id
+      \item 点击"将命令添加为图元", 在下方框中输入的cg\_cli图元命令, 将由程序分配id, 并绘制到画布, 用户不应当自行指明id
+    \end{itemize}
+  \end{enumerate}
+\end{itemize}
+\subsection{项目框架}
+这一部分基于课程给出的框架, 做了比较大的修改, 在这里主要描述我修改或添加的部分
+\begin{itemize}
+  \item 设计思路\begin{itemize}
+    \item 按钮控制流(MainWindow.some\_btn): MainWindow.some\_action -> MyCanvas -> MainWindow.updateUI(如有必要)
+    \item 事件控制流(MyCanvas.some\_event): MyCanvas -> MainWindow.some\_func ->  MainWindow.updateUI(如有必要)
+    \item 绘图/变换控制流: MyCanvas.start\_xxx -> 用户操作 -> MyCanvas.finish\_xxx -> Scene.update()
+  \end{itemize}
+  \item [修改]MainWindow: 主窗口类, 构建界面, 主要的功能块如下\begin{itemize}
+    \item 风格: 为整个窗体设置StyleSheet
+    \item 控件: 创建所有的按钮, 图元列表和历史记录控件, 设定必要的Icon和Tip
+    \item 布局: 创建6个子布局, 按照界面设计将布局与控件嵌套排列
+    \item 布局: 设定主窗口的布局, 添加子布局
+    \item 信号: 连接信号槽和相应的动作函数
+    \item 函数: 定义每个信号对应的动作函数
+    \item 函数: 另有一些辅助的函数, 不直接与信号相关
+  \end{itemize}
+  \item [修改]MyCanvas: 画布窗体类\begin{itemize}
+    \item 信号: 我添加了2个信号, 方便界面更新\begin{itemize}
+      \item statusChanged: 由MyCanvas管理其status, 当status改变时, 将会发出信号, 由MainWindow的updateUI函数进行处理, 更新界面元素
+      \item selectChanged: MyCanvas中的点击事件会改变选中的图元, 此时发出信号, 由MainWindow的updateUI函数进行处理, 更新界面元素
+    \end{itemize}
+    \item 事件 \begin{itemize}
+      \item mouseMoveEvent: 鼠标移动事件, 该事件会更新临时图元或变换的最后一个控制点
+      \item mousePressEvent: 鼠标按下事件, 根据status有不同的效果\begin{itemize}
+        \item 首次点击, 将根据status创建新的图元, 向图元中添加2个当前点
+        \item 之后的每次点击, 都将会向图元中添加一个新的点
+      \end{itemize}
+      \item mouseReleaseEvent: 鼠标松开事件\begin{itemize}
+        \item 2控制点图元和变换: 将调用finish, 结束当前绘制
+        \item 多控制点图元: 不产生效果
+      \end{itemize}
+      \item mouseDoubleClickEvent: 鼠标双击事件, 仅对多控制点图元有效, 完成其绘制\\
+      另外, 由于三次均匀B样条曲线有最小控制点数限制, 小于4个点时双击亦不能结束绘制
+    \end{itemize}
+    \item 成员变量\begin{itemize}
+      \item main\_window: 可以访问MainWindow的成员, 为界面更新提供方便
+      \item list\_widget: 其实就是MainWindow的图元列表
+      \item 原有的成员变量不赘述, 功能几乎无改变
+      \item temp\_algorithm, temp\_id, temp\_item: 正在创建的新图元, 并兼做裁剪时提示框的存储控件
+      \item temp\_last\_point: 对已经创建的控制点计数, 用于控制多控制点图元的结束
+      \item edit\_data: 变换过程中用到的临时数据
+      \item edit\_p\_list: 被变换的图元, 原先的p\_list, 用于撤销
+      \item pen\_color: 画笔颜色
+    \end{itemize}
+    \item 绘图与变换\begin{itemize}
+      \item start\_draw: 设置相关成员变量
+      \item start\_edit: 若有选中的图元, 设置相关成员变量; 否则, status转为空闲
+      \item start\_clip: 若无选中的图元, status转为空闲; 若有, 设置相关成员变量, 并准备创建一个临时的矩形图元(DDA多边形)用于显示边框
+      \item finish\_draw: 添加新图元到scene, 添加历史记录, 清理临时变量
+      \item finish\_edit: 添加历史记录, 清理临时变量
+      \item finish\_clip: 清理临时变量; 若线段裁剪后为空, 从MainWindow调用删除动作, 删除该图元; 历史记录据此有不同类别(裁剪/删除)
+    \end{itemize}
+    \item 选择与删除\begin{itemize}
+      \item clear\_selection: 点击事件发生在没有图元的地方时, 被调用, 清除当前的selected\_id, 更新图元的selected
+      \item delete\_selection: 从item\_dict中pop掉选中的图元, 从scene中移除, 并将其作为返回值, 以备后用
+      \item selection\_changed: 点击事件发生在没有图元的地方时, 被调用, 修改当前的selected\_id, 更新图元的selected
+    \end{itemize}
+  \end{itemize}
   \item 
 \end{itemize}
-\dots
+
+\subsection{项目框架}
+这一部分基于课程给出的框架, 做了比较大的修改, 在这里主要描述我添加的部分
+\begin{itemize}
+  \item 整体布局
+  \begin{figure}[htp]
+    \centering
+    \includegraphics[width=12cm]{asset/02.png}
+    \caption{窗口布局, 蓝色为QHboxLayout, 绿色为QVboxLayout, 黄色为QWidget}
+    \end{figure}
+  \item 界面展示
+  \begin{figure}[htp]
+    \centering
+    \includegraphics[width=12cm]{asset/03.png}
+    \caption{窗口布局, 蓝色为QHboxLayout, 绿色为QVboxLayout, 黄色为QWidget}
+    \end{figure}
+  \item MainWindow: 主窗口类, 构建界面, 主要的代码功能如下\begin{itemize}
+    \item 为整个窗体设置StyleSheet, 
+  \end{itemize}
+  \item 
+\end{itemize}
 
 \section{总结}
 \dots
