@@ -454,10 +454,87 @@ class MainWindow(QMainWindow):
         border-width: 1px;
         border-color: black;
     }
-    QSlider {
-        border-style: solid;
-        border-width: 10px;
-        border-color: green;
+    
+    QScrollBar:vertical {
+        background: #eeeeee;
+        width: 9px;
+        margin: 0px 0 0px 0;
+    }
+    QScrollBar::handle:vertical {
+        background: #757575;
+        min-height: 20px;
+        margin: 0 1px 0 2px;
+        border-radius: 3px;
+        border: none;
+    }
+    QScrollBar::handle:vertical:pressed {
+        background: #616161;
+    }
+    QScrollBar::handle:vertical:hover:!pressed {
+        background: #9e9e9e;
+    }
+    
+    QScrollBar::add-line:vertical {
+        background: white;
+        height: 0px;
+        subcontrol-position: bottom;
+        subcontrol-origin: margin;
+    }
+    
+    QScrollBar::sub-line:vertical {
+        background: white;
+        height: 0px;
+        subcontrol-position: top;
+        subcontrol-origin: margin;
+    }
+    
+    QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+        border: 1px solid grey;
+        width: 3px;
+        height: 3px;
+        background: white;
+    }
+    
+    QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+        background: none;
+    }
+
+    QScrollBar:horizontal {
+        background: #eeeeee;
+        height: 9px;
+        margin: 0px 0 0px 0;
+    }
+    QScrollBar::handle:horizontal {
+        background: #757575;
+        min-width: 20px;
+        margin: 2px 0px 1px 0px;
+        border-radius: 3px;
+        border: none;
+    }
+    QScrollBar::handle:horizontal:pressed {
+        background: #616161;
+    }
+    QScrollBar::handle:horizontal:hover:!pressed {
+        background: #9e9e9e;
+    }
+    QScrollBar::add-line:horizontal {
+        border: 0px solid grey;
+        background: #32CC99;
+        width: 0px;
+        subcontrol-position: right;
+        subcontrol-origin: margin;
+    }
+    
+    QScrollBar::sub-line:horizontal {
+        border: 0px solid grey;
+        background: #32CC99;
+        width: 0px;
+        subcontrol-position: left;
+        subcontrol-origin: margin;
+    }
+    
+    QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+        background: none;
     }
     """
 
@@ -473,7 +550,7 @@ class MainWindow(QMainWindow):
         self.scene = QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, 600, 600)
         self.canvas_widget = MyCanvas(self.scene, self)
-        self.canvas_widget.setFixedSize(602, 602)
+        # self.canvas_widget.setBaseSize(802, 802)
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
 
@@ -723,7 +800,7 @@ class MainWindow(QMainWindow):
                 self.scene = QGraphicsScene(self)
                 self.scene.setSceneRect(0, 0, w, h)
                 self.canvas_widget.setScene(self.scene)
-                self.canvas_widget.setFixedSize(w + 2, h + 2)
+                # self.canvas_widget.setFixedSize(w + 2, h + 2)
             except BaseException:
                 QMessageBox.critical(self, "操作失败", "您输入的数据有误, 请修改后重试")
 
