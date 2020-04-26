@@ -31,6 +31,7 @@ from PyQt5.QtWidgets import (
     QSplashScreen,
     QLineEdit,
     QFileDialog,
+    QInputDialog,
     QStyleOptionGraphicsItem)
 from PyQt5.QtGui import QPainter, QMouseEvent, QColor, QPalette, QIcon, QPixmap, QFontDatabase, QImage
 from PyQt5.QtCore import QRectF, QLine, Qt, QPoint, QSize, pyqtSignal
@@ -702,16 +703,27 @@ class MainWindow(QMainWindow):
         )
 
     def reset_canvas_action(self):
-        if QMessageBox.question(self,'重置画布', "您确认要重置画布吗？\n该修改不可撤销！", QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-            self.canvas_widget.clear_selection()
-            for item in self.canvas_widget.item_dict.values():
-                self.scene.removeItem(item)
-            self.list_widget.clear()
-            self.canvas_widget.item_dict.clear()
-            self.log_widget.clear()
-            self.log_widget.item_list.clear()
-            self.log_widget.item_ptr = -1
-            self.item_cnt = 0
+        text, ok = QInputDialog.getText(self, '重置画布', '您确定要重置画布吗? 该操作不可撤销! \n要继续, 请在下方输入新的画布尺寸, "宽 高"', text='%d %d' % (self.scene.width(), self.scene.height()))
+        if not ok:
+            pass
+        else:
+            try:
+                param = text.split(' ', 1)
+                w = int(param[0])
+                h = int(param[1])
+                self.scene.setSceneRect(0, 0, w, h)
+                self.canvas_widget.setFixedSize(w + 2, h + 2)
+                self.canvas_widget.clear_selection()
+                for item in self.canvas_widget.item_dict.values():
+                    self.scene.removeItem(item)
+                self.list_widget.clear()
+                self.canvas_widget.item_dict.clear()
+                self.log_widget.clear()
+                self.log_widget.item_list.clear()
+                self.log_widget.item_ptr = -1
+                self.item_cnt = 0
+            except BaseException:
+                QMessageBox.critical(self, "操作失败", "您输入的数据有误, 请修改后重试")
 
     def delete_action(self):
         if self.canvas_widget.selected_id != '':
