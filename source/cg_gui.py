@@ -467,13 +467,12 @@ class MainWindow(QMainWindow):
         self.item_cnt = 0
         # 使用QListWidget来记录已有的图元，并用于选择图元。注：这是图元选择的简单实现方法，更好的实现是在画布中直接用鼠标选择图元
         self.list_widget = QListWidget(self)
-        self.list_widget.setMinimumWidth(200)
 
         # 使用QGraphicsView作为画布
         self.scene = QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, 600, 600)
         self.canvas_widget = MyCanvas(self.scene, self)
-        self.canvas_widget.setFixedSize(606, 606)
+        self.canvas_widget.setFixedSize(602, 602)
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
 
@@ -489,6 +488,7 @@ class MainWindow(QMainWindow):
         vbox_layout4 = QVBoxLayout()
         hbox_layout5 = QHBoxLayout()
         hbox_layout3 = QHBoxLayout()
+        hbox_layout3.setSizeConstraint(QLayout.SetFixedSize)
         vbox_layout6 = QVBoxLayout()
 
         # vbox_layout4.setSpacing(0)
@@ -584,14 +584,20 @@ class MainWindow(QMainWindow):
         hbox_layout5.addWidget(self.command_input)
         hbox_layout5.addWidget(self.push_btn)
 
-        vbox_layout6.addWidget(self.canvas_widget)
+        vbox_layout6.addWidget(self.canvas_widget, 1, Qt.AlignCenter)
         vbox_layout6.setAlignment(Qt.AlignTop)
         vbox_layout6.addLayout(hbox_layout5)
 
+                                                      
         vbox_layout4.addWidget(self.list_widget)
-        vbox_layout4.addLayout(hbox_layout3)
+        vbox_layout4.addLayout(hbox_layout3, 0)
         vbox_layout4.addWidget(self.log_widget)
-
+        vbox_layout4.setSizeConstraint(QLayout.SetFixedSize)
+        
+        self.list_widget.setMinimumWidth(216)
+        self.list_widget.setMaximumWidth(216)
+        self.log_widget.setMinimumWidth(216)
+        self.log_widget.setMaximumWidth(216)
         ## Add Btn
         vbox_layout2.addWidget(self.line_naive_btn               )
         vbox_layout2.addWidget(self.line_dda_btn                 )
@@ -656,17 +662,17 @@ class MainWindow(QMainWindow):
         self.hbox_layout = QHBoxLayout()
         # self.hbox_layout.addWidget(toolBar)
         self.hbox_layout.addLayout(vbox_layout2)
-        self.hbox_layout.addLayout(vbox_layout6)
+        self.hbox_layout.addLayout(vbox_layout6, 1)
         # self.hbox_layout.addWidget(self.canvas_widget)
         self.hbox_layout.addLayout(vbox_layout1)
         # self.hbox_layout.addWidget(self.list_widget, stretch=1)
-        self.hbox_layout.addLayout(vbox_layout4, stretch=1)
+        self.hbox_layout.addLayout(vbox_layout4)
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.hbox_layout)
         self.central_widget.setStyleSheet(self.centralStyleSheet)
         self.setCentralWidget(self.central_widget)
         # self.statusBar().showMessage('空闲')
-        self.resize(600, 600)
+        # self.resize(600, 600)
         self.setWindowTitle('Pytura')
         self.setWindowIcon(QIcon('asset/icon/pytura.ico'))
         # ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("myappid")
