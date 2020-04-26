@@ -711,8 +711,6 @@ class MainWindow(QMainWindow):
                 param = text.split(' ', 1)
                 w = int(param[0])
                 h = int(param[1])
-                self.scene.setSceneRect(0, 0, w, h)
-                self.canvas_widget.setFixedSize(w + 2, h + 2)
                 self.canvas_widget.clear_selection()
                 for item in self.canvas_widget.item_dict.values():
                     self.scene.removeItem(item)
@@ -722,6 +720,10 @@ class MainWindow(QMainWindow):
                 self.log_widget.item_list.clear()
                 self.log_widget.item_ptr = -1
                 self.item_cnt = 0
+                self.scene = QGraphicsScene(self)
+                self.scene.setSceneRect(0, 0, w, h)
+                self.canvas_widget.setScene(self.scene)
+                self.canvas_widget.setFixedSize(w + 2, h + 2)
             except BaseException:
                 QMessageBox.critical(self, "操作失败", "您输入的数据有误, 请修改后重试")
 
