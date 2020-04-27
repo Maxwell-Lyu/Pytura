@@ -395,6 +395,7 @@ class MainWindow(QMainWindow):
     }   
     QGraphicsView{
         background: #ffffff;
+        margin: 8px 0 8px 0;
     }
     QListWidget {
         icon-size: 24px;
@@ -740,10 +741,23 @@ class MainWindow(QMainWindow):
         self.hbox_layout = QHBoxLayout()
         # self.hbox_layout.addWidget(toolBar)
         self.hbox_layout.addLayout(vbox_layout2)
+        line1 = QLabel()
+        line1.setFrameStyle(QFrame.VLine | QFrame.Plain)
+        line1.setLineWidth(0)
+        line1.setStyleSheet('color: black;')
+        self.hbox_layout.addWidget(line1)
         self.hbox_layout.addLayout(vbox_layout6, 1)
-        # self.hbox_layout.addWidget(self.canvas_widget)
+        line2 = QLabel()
+        line2.setFrameStyle(QFrame.VLine | QFrame.Plain)
+        line2.setLineWidth(0)
+        line2.setStyleSheet('color: black;')
+        self.hbox_layout.addWidget(line2)
         self.hbox_layout.addLayout(vbox_layout1)
-        # self.hbox_layout.addWidget(self.list_widget, stretch=1)
+        line3 = QLabel()
+        line3.setFrameStyle(QFrame.VLine | QFrame.Plain)
+        line3.setLineWidth(0)
+        line3.setStyleSheet('color: black;')
+        self.hbox_layout.addWidget(line3)
         self.hbox_layout.addLayout(vbox_layout4)
         self.central_widget = QWidget()
         self.central_widget.setLayout(self.hbox_layout)
@@ -800,7 +814,7 @@ class MainWindow(QMainWindow):
                 self.scene = QGraphicsScene(self)
                 self.scene.setSceneRect(0, 0, w, h)
                 self.canvas_widget.setScene(self.scene)
-                # self.canvas_widget.setFixedSize(w + 2, h + 2)
+                self.canvas_widget.setMaximumSize(w + 2, h + 2)
             except BaseException:
                 QMessageBox.critical(self, "操作失败", "您输入的数据有误, 请修改后重试")
 
