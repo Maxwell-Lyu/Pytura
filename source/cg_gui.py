@@ -395,7 +395,6 @@ class MainWindow(QMainWindow):
     }   
     QGraphicsView{
         background: #ffffff;
-        margin: 8px 0 8px 0;
     }
     QListWidget {
         icon-size: 24px;
@@ -551,7 +550,6 @@ class MainWindow(QMainWindow):
         self.scene = QGraphicsScene(self)
         self.scene.setSceneRect(0, 0, 600, 600)
         self.canvas_widget = MyCanvas(self.scene, self)
-        # self.canvas_widget.setBaseSize(802, 802)
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
 
