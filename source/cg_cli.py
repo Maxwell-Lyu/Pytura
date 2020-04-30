@@ -27,7 +27,7 @@ if __name__ == '__main__':
             if line[0] == 'resetCanvas':
                 width = int(line[1])
                 height = int(line[2])
-                item_dict.clear()
+                item_dict = {}
             elif line[0] == 'saveCanvas':
                 save_name = line[1]
                 canvas = np.zeros([height, width, 3], np.uint8)
@@ -35,23 +35,14 @@ if __name__ == '__main__':
                 for item_type, p_list, algorithm, color in item_dict.values():
                     if item_type == 'line':
                         pixels = alg.draw_line(p_list, algorithm)
-                        for x, y in pixels:
-                            canvas[y, x] = color
                     elif item_type == 'polygon':
                         pixels = alg.draw_polygon(p_list, algorithm)
-                        for x, y in pixels:
-                            canvas[y, x] = color
-                        pass
                     elif item_type == 'ellipse':
                         pixels = alg.draw_ellipse(p_list)
-                        for x, y in pixels:
-                            canvas[y, x] = color
-                        pass
                     elif item_type == 'curve':
                         pixels = alg.draw_curve(p_list, algorithm)
-                        for x, y in pixels:
-                            canvas[y, x] = color
-                        pass
+                    for x, y in pixels:
+                        canvas[height - 1 - y, x] = color
                 Image.fromarray(canvas).save(os.path.join(output_dir, save_name + '.bmp'), 'bmp')
             elif line[0] == 'setColor':
                 pen_color[0] = int(line[1])
