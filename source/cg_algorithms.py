@@ -209,7 +209,7 @@ def translate(p_list, dx, dy):
     :param dy: (int) 垂直方向平移量
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1], [x_2, y_2], ...]) 变换后的图元参数
     """
-    return list(map(lambda p: (p[0] + dx, p[1] + dy), p_list))
+    return list(map(lambda p: (p[0] + dx, p[1] - dy), p_list))
 
 
 def rotate(p_list, x, y, r):
