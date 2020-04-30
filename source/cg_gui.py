@@ -825,13 +825,13 @@ class MainWindow(QMainWindow):
     def export_action(self):
         filename = QFileDialog.getSaveFileName(self,'导出当前画布', '.')
         if filename[0]:
-            buf = 'resetCanvas 600 600\n'
+            buf = 'resetCanvas %d %d\n' % (self.scene.width(), self.scene.height())
             with open(filename[0], 'wt') as f:
                 for item in self.canvas_widget.item_dict.values():
                     buf += 'setColor %d %d %d\n' % (item.color.red(), item.color.green(), item.color.blue())
                     buf += 'draw' + item.item_type.capitalize() + ' ' + item.id + ' ' 
                     for p in item.p_list:
-                        buf += '%d %d ' % (p[0], p[1])
+                        buf += '%d %d ' % (p[0], self.scene.height() - p[1] - 1)
                     buf += item.algorithm + '\n'
                 buf += 'saveCanvas 1'
                 f.write(buf)
@@ -935,38 +935,43 @@ class MainWindow(QMainWindow):
         try:
             if line[0] == 'drawLine':
                 item_type = 'line'
-                x0 = int(line[1])
-                y0 = int(line[2])
-                x1 = int(line[3])
-                y1 = int(line[4])
+                item_id = line[1]
+                x0 = int(line[2])
+                y0 = int(line[3])
+                x1 = int(line[4])
+                y1 = int(line[5])
+                algorithm = line[6]
                 p_list = [[x0, y0], [x1, y1]]
-                algorithm = line[5]
                 if algorithm not in ['Naive', 'DDA', 'Bresenham']: raise BaseException
             elif line[0] == 'drawPolygon':
                 item_type = 'polygon'
+                item_id = line[1]
                 p_list = []
-                for i in range(1, len(line) - 1, 2):
+                for i in range(2, len(line) - 1, 2):
                     p_list.append([int(line[i]), int(line[i+1])])
                 algorithm = line[len(line) - 1]
                 if algorithm not in ['DDA', 'Bresenham']: raise BaseException
             elif line[0] == 'drawEllipse':
                 item_type = 'ellipse'
-                x0 = int(line[1])
-                y0 = int(line[2])
-                x1 = int(line[3])
-                y1 = int(line[4])
+                item_id = line[1]
+                x0 = int(line[2])
+                y0 = int(line[3])
+                x1 = int(line[4])
+                y1 = int(line[5])
                 x0, y0, x1, y1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
                 algorithm = ''
                 p_list = [[x0, y0], [x1, y1]]
             elif line[0] == 'drawCurve':
                 item_type = 'curve'
+                item_id = line[1]
                 p_list = []
-                for i in range(1, len(line) - 1, 2):
+                for i in range(2, len(line) - 1, 2):
                     p_list.append([int(line[i]), int(line[i+1])])
                 algorithm = line[len(line) - 1]
                 if algorithm not in ['Bezier', 'B-spline']: raise BaseException
             else:
                 raise BaseException
+            p_list = list(map(lambda p: (p[0], self.scene.height() - p[1] - 1), p_list))
             item = MyItem(self.get_id(), item_type, p_list, algorithm, self.canvas_widget.pen_color)
             item.isTemp = False
             item.isDirty = True
@@ -977,7 +982,7 @@ class MainWindow(QMainWindow):
             self.canvas_widget.scene().update()
             self.canvas_widget.addItem(item)
         except BaseException:
-            QMessageBox.critical(self, "解析失败", "您输入的命令有误, 请修改后重试\n注意: \n该命令行仅支持cg_cli规范中的绘制命令, 且不要设置ID")
+            QMessageBox.critical(self, "解析失败", "您输入的命令有误, 请修改后重试\n注意: \n该命令行仅支持cg_cli规范中的绘制命令, 不支持变换等")
         finally:
             return
         
@@ -986,8 +991,9 @@ class MainWindow(QMainWindow):
             self.command_input.clear()
         else:
             item = self.canvas_widget.item_dict[self.canvas_widget.selected_id]
-            buf = 'draw' + item.item_type.capitalize() + ' '
-            for p in item.p_list:
+            buf = 'draw' + item.item_type.capitalize() + ' ' + item.item_type.capitalize() + item.id + ' '
+            p_list = list(map(lambda p: (p[0], self.scene.height() - p[1] - 1), item.p_list))
+            for p in p_list:
                 buf += '%d %d ' % (p[0], p[1])
             buf += item.algorithm
             self.command_input.setText(buf)
