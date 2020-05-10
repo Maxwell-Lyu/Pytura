@@ -1,10 +1,12 @@
 .vscode/*
 /source/__pycache__/*
 /source/asset/*
-/report/*
-!/report/*.tex
+/doc/*
+!/doc/*.tex
 /source/build/*
 /source/dist/*
 /psd/*
 *.exe
 *.spec
+*.7z
+*.pdf
