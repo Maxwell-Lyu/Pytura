@@ -9,10 +9,10 @@ from PIL import Image
 
 
 if __name__ == '__main__':
-    input_file = sys.argv[1]
-    output_dir = sys.argv[2]
-    # input_file = ".\\input.sh"
-    # output_dir = "..\\img"
+    # input_file = sys.argv[1]
+    # output_dir = sys.argv[2]
+    input_file = ".\\input.sh"
+    output_dir = "..\\img"
     os.makedirs(output_dir, exist_ok=True)
 
     item_dict = {}
@@ -33,7 +33,7 @@ if __name__ == '__main__':
                 canvas = np.zeros([height, width, 3], np.uint8)
                 canvas.fill(255)
                 for item_type, p_list, algorithm, color in item_dict.values():
-                    if item_type == 'line':
+                    if item_type == 'line' and p_list.__len__() > 0:
                         pixels = alg.draw_line(p_list, algorithm)
                     elif item_type == 'polygon':
                         pixels = alg.draw_polygon(p_list, algorithm)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
                 item_id = line[1]
                 x = int(line[2])
                 y = int(line[3])
-                s = int(line[4])
+                s = float(line[4])
                 item_dict[item_id][1] = alg.scale(item_dict[item_id][1], x, y, s) 
             elif line[0] == 'clip':
                 item_id = line[1]
@@ -103,12 +103,9 @@ if __name__ == '__main__':
                 y1 = int(line[5])
                 x0, y0, x1, x1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
                 algorithm = line[6]
-                p_list = item_dict[item_id][1]
-                p_list = alg.clip(p_list, x0, y0, x1, y1, algorithm)
-                if p_list.__len__() > 0:
-                    item_dict[item_id][1] = p_list
-                else:
-                    item_dict.pop(item_id) 
+                item_dict[item_id][1] = alg.clip(item_dict[item_id][1], x0, y0, x1, y1, algorithm)
+                # if item_dict[item_id][1].__len__() == 0:
+                #     item_dict.pop(item_id) 
             ...
 
             line = fp.readline()
