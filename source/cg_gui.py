@@ -4,7 +4,6 @@
 import sys, time
 import math
 import cg_algorithms as alg
-import copy
 from typing import Optional
 from PyQt5.QtWidgets import (
     QColorDialog, 
