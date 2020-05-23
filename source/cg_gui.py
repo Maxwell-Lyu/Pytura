@@ -85,6 +85,7 @@ class MyCanvas(QGraphicsView):
             self.temp_id = self.selected_id
             self.item_dict[self.temp_id].isTemp = True
             self.edit_p_list = self.item_dict[self.temp_id].p_list
+            self.item_dict[self.temp_id].prepareGeometryChange()
         else:
             self.set_status('')
 
@@ -93,6 +94,7 @@ class MyCanvas(QGraphicsView):
             self.temp_algorithm = algorithm
             self.set_status(status)
             self.temp_id = 'clip-rect'
+            self.item_dict[self.temp_id].prepareGeometryChange()
         else:
             self.set_status('')
 
