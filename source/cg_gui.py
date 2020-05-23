@@ -207,7 +207,7 @@ class MyCanvas(QGraphicsView):
         super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        pos = self.mapToScene(event.localPos().toPoint())
+        pos = event.localPos().toPoint()
         x = int(pos.x())
         y = int(pos.y())
         if self.status == '':
