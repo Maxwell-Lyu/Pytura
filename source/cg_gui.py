@@ -207,15 +207,16 @@ class MyCanvas(QGraphicsView):
         super().mouseMoveEvent(event)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        pos = event.localPos().toPoint()
+        pos_click = event.localPos().toPoint()
+        pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
         if self.status == '':
             if self.selected_id: 
                 self.item_dict[self.selected_id].selected = False
                 self.item_dict[self.selected_id].update()
-            if self.main_window.canvas_widget.itemAt(QPoint(x, y)):
-                self.set_select(self.main_window.canvas_widget.itemAt(QPoint(x, y)).id)
+            if self.main_window.canvas_widget.itemAt(pos_click):
+                self.set_select(self.main_window.canvas_widget.itemAt(pos_click).id)
                 self.main_window.list_widget.setCurrentItem(self.item_dict[self.selected_id].entry)
                 self.item_dict[self.selected_id].selected = True
             else:
