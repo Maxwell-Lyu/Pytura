@@ -22,13 +22,18 @@
 # drawLine 666 200 300 400 150 Naive
 # translate line1 150 150
 # saveCanvas 2
-
-
-resetCanvas 600 500
-setColor 0 255 0
-drawPolygon p2 0 10 20 50 50 90 100 150 150 110 DDA
-drawCurve p3 0 10 20 50 50 90 100 150 150 110 B-spline
-drawCurve p4 0 10 20 50 50 90 100 150 150 110 Bezier
-translate p3 100 100
-rotate p4 0 0 -20
-saveCanvas 1
+resetCanvas 400 600
+drawCurve c1 50 50 75 75 100 125 125 200 150 275 175 375 200 500 B-spline
+drawCurve c2 50 100 75 125 100 175 125 250 150 325 175 425 200 550 Bezier
+setColor 205 0 50
+drawLine l1 50 50 200 50 DDA
+drawLine l2 50 100 200 100 DDA
+drawLine l3 50 150 200 150 DDA
+drawLine l4 50 200 200 200 DDA
+drawLine l5 50 250 200 250 DDA
+drawLine l6 50 300 200 300 DDA
+drawLine l7 50 350 200 350 DDA
+drawLine l8 50 400 200 400 DDA
+drawLine l9 50 450 200 450 DDA
+drawLine l0 50 500 200 500 DDA
+saveCanvas yls1
