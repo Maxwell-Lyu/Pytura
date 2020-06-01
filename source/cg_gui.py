@@ -99,7 +99,7 @@ class MyCanvas(QGraphicsView):
             self.set_status('')
 
     def finish_draw(self):
-        self.set_status('')
+        # self.set_status('')
         self.temp_last_point = 0
         self.item_dict[self.temp_id] = self.temp_item
         # self.list_widget.addItem(self.temp_id)
@@ -595,6 +595,7 @@ class MainWindow(QMainWindow):
         self.exit_btn                       = QPushButton(QIcon('asset/icon/exit.svg'), '')
         self.undo_btn                       = QPushButton(QIcon('asset/icon/undo.svg'), '')
         self.redo_btn                       = QPushButton(QIcon('asset/icon/redo.svg'), '')
+        self.mouse_btn                      = QPushButton(QIcon('asset/icon/mouse.svg'), '')
         self.line_naive_btn                 = QPushButton(QIcon('asset/icon/line_naive.svg'), '')
         self.line_dda_btn                   = QPushButton(QIcon('asset/icon/line_dda.svg'), '')
         self.line_bresenham_btn             = QPushButton(QIcon('asset/icon/line_bresenham.svg'), '')
@@ -617,6 +618,7 @@ class MainWindow(QMainWindow):
         self.exit_btn                       .setToolTip('退出')
         self.undo_btn                       .setToolTip('撤销')
         self.redo_btn                       .setToolTip('重做')
+        self.mouse_btn                      .setToolTip('鼠标指针(点击画布选取图元)')
         self.line_naive_btn                 .setToolTip('Naive算法绘制线段')
         self.line_dda_btn                   .setToolTip('DDA算法绘制线段')
         self.line_bresenham_btn             .setToolTip('Bresenham算法绘制线段')
@@ -632,6 +634,7 @@ class MainWindow(QMainWindow):
         self.clip_liang_barsky_btn          .setToolTip('Liang-Barsky算法裁剪线段')
         self.push_btn                       .setToolTip('将命令添加为图元')
         self.pull_btn                       .setToolTip('将选中图元解析为命令')
+        self.mouse_btn                      .setCheckable(True)
         self.line_naive_btn                 .setCheckable(True)
         self.line_dda_btn                   .setCheckable(True)
         self.line_bresenham_btn             .setCheckable(True)
@@ -678,6 +681,7 @@ class MainWindow(QMainWindow):
         self.log_widget.setMinimumWidth(216)
         self.log_widget.setMaximumWidth(216)
         ## Add Btn
+        vbox_layout2.addWidget(self.mouse_btn               )
         vbox_layout2.addWidget(self.line_naive_btn               )
         vbox_layout2.addWidget(self.line_dda_btn                 )
         vbox_layout2.addWidget(self.line_bresenham_btn           )
@@ -717,6 +721,7 @@ class MainWindow(QMainWindow):
         self.exit_btn                       .clicked.connect(self.exit_action                 )
         self.undo_btn                       .clicked.connect(self.undo_action                 )
         self.redo_btn                       .clicked.connect(self.redo_action                 )
+        self.mouse_btn                      .clicked.connect(self.mouse_action                )
         self.line_naive_btn                 .clicked.connect(self.line_naive_action           )
         self.line_dda_btn                   .clicked.connect(self.line_dda_action             )
         self.line_bresenham_btn             .clicked.connect(self.line_bresenham_action       )
@@ -857,6 +862,11 @@ class MainWindow(QMainWindow):
     def redo_action(self):
         self.log_widget.redo()
 
+    def mouse_action(self):
+        self.canvas_widget.set_status('')
+        # self.statusBar().showMessage('就绪')
+        # self.list_widget.clearSelection()
+        # self.canvas_widget.clear_selection()
     # Description: line actions
     def line_naive_action(self):
         self.canvas_widget.start_draw('line','Naive', self.get_id())
@@ -1002,6 +1012,7 @@ class MainWindow(QMainWindow):
 
 
     def updateUI(self, old = '', new = '', algorithm = ''):
+        self.mouse_btn                      .setChecked(False)
         self.line_naive_btn                 .setChecked(False)
         self.line_dda_btn                   .setChecked(False)
         self.line_bresenham_btn             .setChecked(False)
@@ -1038,6 +1049,7 @@ class MainWindow(QMainWindow):
             self.delete_btn                     .setDisabled(False)
         if new == '':
             message = '空闲'
+            self.mouse_btn                 .setChecked(True)
         elif new == 'line':
             message = algorithm + '算法绘制线段'
             if algorithm == 'Naive':
