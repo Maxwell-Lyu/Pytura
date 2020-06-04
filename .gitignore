@@ -1,6 +1,5 @@
 .vscode/*
 /source/__pycache__/*
-/source/asset/*
 /doc/*
 !/doc/*.tex
 /source/build/*
@@ -12,3 +11,4 @@
 *.pdf
 171860592_演示.mp4
 /171860592_5/*
+source/asset/font/sarasa-semibold.ttc
