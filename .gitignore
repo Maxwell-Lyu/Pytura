@@ -4,7 +4,7 @@
 !/doc/*.tex
 /source/build/*
 /source/dist/*
-/psd/*
+/other/*
 *.exe
 *.spec
 *.7z
