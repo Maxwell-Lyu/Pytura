@@ -99,6 +99,11 @@ def draw_ellipse(p_list):
     x1, y1 = p_list[1]
     a = abs(x1 - x0) / 2
     b = abs(y1 - y0) / 2
+
+    isMirror = bool(b > a)
+    if isMirror:
+        a, b = b, a
+
     center = [round((x0 + x1)/2), round((y0 + y1)/2)]
 
     result = []
@@ -137,6 +142,10 @@ def draw_ellipse(p_list):
         else:
             x =  x - 1
             d2 = d2 - t4bb * x + t2bb
+
+    if isMirror:
+        result = [(x[1], x[0]) for x in result]
+        
     result += list(map(lambda x :(x[0],-x[1]), result))
     result += list(map(lambda x :(-x[0],x[1]), result))
     result = list(map(lambda x: (x[0] + center[0], x[1] + center[1]), result))
