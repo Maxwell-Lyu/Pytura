@@ -853,9 +853,6 @@ class MainWindow(QMainWindow):
             self.canvas_widget.item_dict[item.id] = item
             self.canvas_widget.scene().update()
             self.canvas_widget.addItem(item)
-        pass
-
-
 
     def delete_action(self):
         if self.canvas_widget.selected_id != '':

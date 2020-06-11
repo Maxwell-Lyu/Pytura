@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Generator: Adobe Illustrator 24.0.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 200 200" style="enable-background:new 0 0 200 200;" xml:space="preserve">
 <style type="text/css">
 	.st0{fill:#FFFFFF;}
+	.st1{fill:none;}
 </style>
-<path class="st0" d="M170.1,121.8c-3.2,0-5.9,2.6-5.9,5.9v33.2c0,1.9-1.6,3.5-3.5,3.5H39.2c-1.9,0-3.5-1.6-3.5-3.5v-33.2
-	c0-3.2-2.6-5.9-5.9-5.9c-3.2,0-5.9,2.6-5.9,5.9c0,0,0,0,0,0v37.8c0,5.8,4.7,10.6,10.6,10.6h130.9c5.8,0,10.6-4.7,10.6-10.6v-37.8
-	C176,124.4,173.4,121.8,170.1,121.8L170.1,121.8z M96,25.7c2.3-2.3,6-2.3,8.3,0c0,0,0,0,0,0l26.4,26.4c2.7,1.9,3.3,5.5,1.4,8.2
-	c-1.9,2.7-5.5,3.3-8.2,1.4c-0.6-0.4-1.1-1-1.5-1.6L106,44.1v98c0,3.2-2.6,5.9-5.9,5.9s-5.9-2.6-5.9-5.9v-98L77.9,60.2
-	c-2.7,1.9-6.3,1.2-8.2-1.4c-1.4-2-1.4-4.6-0.1-6.6L96,25.7z"/>
+<g id="图层_1">
+	<g id="图层_1_1_">
+		<path class="st0" d="M68.8,156.3v-43.8H125h6.3h12.5V100H56.3v56.3H43.8V43.8h18.8v37.5h75V46.5l18.8,18.8v47.3h12.5V60l-1.8-2
+			l-25-25l-2-1.8H31.3v137.5H125v-12.5H68.8V156.3z M75,43.8h25v12.5h12.5V43.8H125v25H75V43.8z"/>
+	</g>
+	<g id="图层_2_1_">
+	</g>
+	<g>
+		<rect x="125" y="112.9" class="st1" width="64" height="55.8"/>
+		<path class="st0" d="M126.5,122h43v11.3h-14.4v34.5h-14.2v-34.5h-14.4V122z"/>
+	</g>
+</g>
+<g id="图层_2">
+</g>
 </svg>
