@@ -556,8 +556,13 @@ class MainWindow(QMainWindow):
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
 
+        # Undo and Redo log
         self.log_widget = LogList(self, self.canvas_widget, self)
         self.log_widget.setDisabled(True)
+        
+        # Copy Paste
+        self.copied_item : MyItem = None
+        
         # Tool Bar
         vbox_layout1 = QVBoxLayout()
         vbox_layout1.setSpacing(0)
@@ -589,6 +594,8 @@ class MainWindow(QMainWindow):
             border-image: none;
             """
         )
+        self.copy_btn                       = QPushButton(QIcon('asset/icon/copy.svg'), '')
+        self.paste_btn                      = QPushButton(QIcon('asset/icon/paste.svg'), '')
         self.delete_btn                     = QPushButton(QIcon('asset/icon/delete.svg'), '')
         self.reset_canvas_btn               = QPushButton(QIcon('asset/icon/reset_canvas.svg'), '')
         self.save_btn                       = QPushButton(QIcon('asset/icon/save.svg'), '')
@@ -612,6 +619,8 @@ class MainWindow(QMainWindow):
         self.clip_liang_barsky_btn          = QPushButton(QIcon('asset/icon/clip_liang_barsky.svg'), '')    
         self.push_btn                       = QPushButton(QIcon('asset/icon/push.svg'), '')
         self.pull_btn                       = QPushButton(QIcon('asset/icon/pull.svg'), '')
+        self.copy_btn                       .setToolTip('复制选中图元')
+        self.paste_btn                      .setToolTip('粘贴图元')
         self.delete_btn                     .setToolTip('删除选中图元')
         self.reset_canvas_btn               .setToolTip('重置画布')
         self.save_btn                       .setToolTip('保存为图片')
@@ -702,12 +711,14 @@ class MainWindow(QMainWindow):
         vbox_layout1.addWidget(self.clip_cohen_sutherland_btn    )
         vbox_layout1.addWidget(self.clip_liang_barsky_btn        )
         # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout1.addWidget(line)
+        vbox_layout1.addWidget(self.copy_btn                   )
+        vbox_layout1.addWidget(self.paste_btn                   )
         vbox_layout1.addWidget(self.delete_btn                   )
         vbox_layout1.addWidget(self.save_btn                     )
         vbox_layout1.addWidget(self.export_btn                   )
-        place_holder = QWidget()
-        place_holder.setFixedSize(32, 32)
-        vbox_layout1.addWidget(place_holder                      )
+        # place_holder = QWidget()
+        # place_holder.setFixedSize(32, 32)
+        # vbox_layout1.addWidget(place_holder                      )
         vbox_layout1.addWidget(self.reset_canvas_btn             )
         vbox_layout1.addWidget(self.exit_btn                     )
 
@@ -716,6 +727,8 @@ class MainWindow(QMainWindow):
         ## Slots
         self.set_pen_btn                    .clicked.connect(self.set_pen_action              )
         self.delete_btn                     .clicked.connect(self.delete_action               )
+        self.copy_btn                       .clicked.connect(self.copy_action                 )
+        self.paste_btn                      .clicked.connect(self.paste_action                )
         self.reset_canvas_btn               .clicked.connect(self.reset_canvas_action         )
         self.save_btn                       .clicked.connect(self.save_action                 )
         self.export_btn                     .clicked.connect(self.export_action               )
@@ -823,6 +836,26 @@ class MainWindow(QMainWindow):
                 self.canvas_widget.setMaximumSize(w + 2, h + 2)
             except BaseException:
                 QMessageBox.critical(self, "操作失败", "您输入的数据有误, 请修改后重试")
+
+    def copy_action(self):
+        if self.canvas_widget.selected_id != '':
+            item = self.canvas_widget.item_dict[self.canvas_widget.selected_id]
+            self.copied_item = MyItem(item.id, item.item_type, [_p.copy() for _p in item.p_list], item.algorithm, item.color)
+    def paste_action(self):
+        if self.copied_item:
+            item = self.copied_item
+            item = MyItem(self.get_id(), item.item_type, [_p.copy() for _p in item.p_list], item.algorithm, item.color)
+            item.isTemp = False
+            item.isDirty = True
+            item.selected = False
+            self.log_widget.do('draw', item, None)
+            self.canvas_widget.scene().addItem(item)
+            self.canvas_widget.item_dict[item.id] = item
+            self.canvas_widget.scene().update()
+            self.canvas_widget.addItem(item)
+        pass
+
+
 
     def delete_action(self):
         if self.canvas_widget.selected_id != '':
