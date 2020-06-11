@@ -109,6 +109,7 @@ class MyCanvas(QGraphicsView):
         self.temp_item.isTemp = False
         self.temp_id = ''
         self.updateScene([self.sceneRect()])
+        self.start_draw(self.status, self.temp_algorithm, self.main_window.get_id())
 
     def finish_edit(self):
         self.main_window.log_widget.do('edit', self.item_dict[self.temp_id], self.edit_p_list)
