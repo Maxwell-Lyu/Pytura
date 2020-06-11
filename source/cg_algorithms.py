@@ -354,3 +354,33 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
                         return [(round(x1), round(y1)), (round(x2), round(y2))]
         pass
     return []
+
+
+def clip_polygon(p_list, x_min, y_min, x_max, y_max, algorithm):
+    """多边形裁剪
+
+    :param p_list: (list of list of int: [[x0, y0], ...]) 多边形各个顶点坐标
+    :param x_min: 裁剪窗口左上角x坐标
+    :param y_min: 裁剪窗口左上角y坐标
+    :param x_max: 裁剪窗口右下角x坐标
+    :param y_max: 裁剪窗口右下角y坐标
+    :param algorithm: (string) 使用的裁剪算法，包括'Cohen-Sutherland'和'Liang-Barsky'
+    :return: (list of list of int: [[x_0, y_0], [x_1, y_1]]) 裁剪后多边形各个顶点坐标
+    """
+    if len(p_list) == 2:
+        return clip(p_list, x_min, y_min, x_max, y_max, algorithm)
+    result : [[int]] = []
+    for i in range(len(p_list)):
+        dx = p_list[i][0] - p_list[i - 1][0]
+        dy = p_list[i][1] - p_list[i - 1][1]
+        d1 = math.degrees(math.atan2(dy, dx))
+        new_p_list = clip([p_list[i - 1], p_list[i]], x_min, y_min, x_max, y_max, algorithm)
+        if len(new_p_list) == 2:
+            dx = new_p_list[1][0] - new_p_list[0][0]
+            dy = new_p_list[1][1] - new_p_list[0][1]
+            d2 = math.degrees(math.atan2(dy, dx))
+            if sign(d1) != sign(d2):
+                new_p_list = [new_p_list[1], new_p_list[0]]
+            result += new_p_list
+    return result
+    return list(set(result))

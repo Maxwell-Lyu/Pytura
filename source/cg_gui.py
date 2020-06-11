@@ -90,11 +90,10 @@ class MyCanvas(QGraphicsView):
             self.set_status('')
 
     def start_clip(self, status, algorithm):
-        if self.selected_id and self.item_dict[self.selected_id].item_type == 'line':
+        if self.selected_id and (self.item_dict[self.selected_id].item_type == 'line' or self.item_dict[self.selected_id].item_type == 'polygon'):
             self.temp_algorithm = algorithm
             self.set_status(status)
             self.temp_id = 'clip-rect'
-            self.item_dict[self.temp_id].prepareGeometryChange()
         else:
             self.set_status('')
 
@@ -128,7 +127,10 @@ class MyCanvas(QGraphicsView):
         minPoint = min(self.temp_item.p_list)
         maxPoint = max(self.temp_item.p_list)
         self.edit_p_list = self.item_dict[self.selected_id].p_list
-        new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
+        if self.item_dict[self.selected_id].item_type == 'line':
+            new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
+        else:
+            new_p_list = alg.clip_polygon(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
         if len(new_p_list) > 0:
             self.item_dict[self.selected_id].p_list = new_p_list
             self.main_window.log_widget.do('edit', self.item_dict[self.selected_id], self.edit_p_list)
@@ -704,7 +706,7 @@ class MainWindow(QMainWindow):
         vbox_layout2.addWidget(self.curve_bezier_btn		        )
         vbox_layout2.addWidget(self.curve_b_spline_btn		    )
         vbox_layout2.addWidget(self.set_pen_btn                 )
-        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(linme)
+        # line  = QFrame(); line.setFrameShape(QFrame.HLine); vbox_layout.addWidget(line)
         vbox_layout1.addWidget(self.translate_btn			    )
         vbox_layout1.addWidget(self.rotate_btn				    )
         vbox_layout1.addWidget(self.scale_btn				    )
@@ -895,7 +897,13 @@ class MainWindow(QMainWindow):
         self.log_widget.redo()
 
     def mouse_action(self):
-        self.canvas_widget.set_status('')
+        if self.canvas_widget.status != '':
+            self.canvas_widget.temp_algorithm = ''
+            self.canvas_widget.set_status('')
+            self.canvas_widget.temp_id = ''
+            self.canvas_widget.temp_last_point = 0
+            self.canvas_widget.temp_item = MyItem('', '', [], '')
+            
         # self.statusBar().showMessage('就绪')
         # self.list_widget.clearSelection()
         # self.canvas_widget.clear_selection()
@@ -1073,7 +1081,7 @@ class MainWindow(QMainWindow):
             else:
                 self.rotate_btn				    .setDisabled(False)
             self.scale_btn						.setDisabled(False)
-            if self.canvas_widget.item_dict[self.canvas_widget.selected_id].item_type == 'line':
+            if self.canvas_widget.item_dict[self.canvas_widget.selected_id].item_type == 'line' or self.canvas_widget.item_dict[self.canvas_widget.selected_id].item_type== 'polygon':
                 self.clip_cohen_sutherland_btn  .setDisabled(False)
                 self.clip_liang_barsky_btn      .setDisabled(False)
             else:
