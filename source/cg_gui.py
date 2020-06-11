@@ -841,6 +841,7 @@ class MainWindow(QMainWindow):
         if self.canvas_widget.selected_id != '':
             item = self.canvas_widget.item_dict[self.canvas_widget.selected_id]
             self.copied_item = MyItem(item.id, item.item_type, [_p.copy() for _p in item.p_list], item.algorithm, item.color)
+            self.updateUI(new = self.canvas_widget.status)
     def paste_action(self):
         if self.copied_item:
             item = self.copied_item
@@ -1064,20 +1065,26 @@ class MainWindow(QMainWindow):
             self.clip_cohen_sutherland_btn      .setDisabled(True)
             self.clip_liang_barsky_btn          .setDisabled(True)
             self.delete_btn                     .setDisabled(True)
+            self.copy_btn                       .setDisabled(True)
         else:
             self.translate_btn					.setDisabled(False)
             if self.canvas_widget.item_dict[self.canvas_widget.selected_id].item_type == 'ellipse':
-                self.rotate_btn						.setDisabled(True)
+                self.rotate_btn					.setDisabled(True)
             else:
-                self.rotate_btn						.setDisabled(False)
+                self.rotate_btn				    .setDisabled(False)
             self.scale_btn						.setDisabled(False)
             if self.canvas_widget.item_dict[self.canvas_widget.selected_id].item_type == 'line':
-                self.clip_cohen_sutherland_btn      .setDisabled(False)
-                self.clip_liang_barsky_btn          .setDisabled(False)
+                self.clip_cohen_sutherland_btn  .setDisabled(False)
+                self.clip_liang_barsky_btn      .setDisabled(False)
             else:
-                self.clip_cohen_sutherland_btn      .setDisabled(True)
-                self.clip_liang_barsky_btn          .setDisabled(True)
+                self.clip_cohen_sutherland_btn  .setDisabled(True)
+                self.clip_liang_barsky_btn      .setDisabled(True)
             self.delete_btn                     .setDisabled(False)
+            self.copy_btn                       .setDisabled(False)
+        if self.copied_item:
+            self.paste_btn                      .setDisabled(False)
+        else:
+            self.paste_btn                      .setDisabled(True)
         if new == '':
             message = '空闲'
             self.mouse_btn                 .setChecked(True)
