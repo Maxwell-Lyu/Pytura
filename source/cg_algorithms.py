@@ -38,7 +38,7 @@ def draw_line(p_list, algorithm):
         else:
             dx = (x1 - x0) / length
             dy = (y1 - y0) / length
-            i = 1
+            i = 0
             x, y = x0, y0
             while i <= length:
                 result.append((round(x), round(y)))
@@ -367,20 +367,97 @@ def clip_polygon(p_list, x_min, y_min, x_max, y_max, algorithm):
     :param algorithm: (string) 使用的裁剪算法，包括'Cohen-Sutherland'和'Liang-Barsky'
     :return: (list of list of int: [[x_0, y_0], [x_1, y_1]]) 裁剪后多边形各个顶点坐标
     """
-    if len(p_list) == 2:
-        return clip(p_list, x_min, y_min, x_max, y_max, algorithm)
-    result : [[int]] = []
-    for i in range(len(p_list)):
-        dx = p_list[i][0] - p_list[i - 1][0]
-        dy = p_list[i][1] - p_list[i - 1][1]
-        d1 = math.degrees(math.atan2(dy, dx))
-        new_p_list = clip([p_list[i - 1], p_list[i]], x_min, y_min, x_max, y_max, algorithm)
-        if len(new_p_list) == 2:
-            dx = new_p_list[1][0] - new_p_list[0][0]
-            dy = new_p_list[1][1] - new_p_list[0][1]
-            d2 = math.degrees(math.atan2(dy, dx))
-            if sign(d1) != sign(d2):
-                new_p_list = [new_p_list[1], new_p_list[0]]
-            result += new_p_list
-    return result
-    return list(set(result))
+    vsold = p_list
+    vsnew = []
+    # 对左边界进行操作
+    flag = 1 #前一个点S的内外标志，用变量flag来标识：0表示在内侧，1表示在外侧。
+    vp1 = vsold.pop(0)
+    if (vp1[0] >= x_min):
+        flag = 0
+    vsold.append(vp1)
+
+    for i in range(len(vsold)):
+        # 对于左边界，判断第i个顶点是否在边界内
+        vp2 = vsold.pop(0)
+        #当前第i个顶点在边界内侧
+        if (vp2[0] >= x_min):
+            if flag!=0: #前一个点在外侧
+                flag = 0 #将标志置0,作为下一次循环的前一点标志
+                vsnew.append((x_min,vp2[1] + (vp1[1] - vp2[1]) * (x_min - vp2[0]) / (vp1[0] - vp2[0])))
+            vsnew.append(vp2)
+        #当前第i个顶点在边界外侧
+        else:
+            if flag == 0: #前一个点在内侧
+                flag = 1 #将标志置0,作为下一次循环的前一点标志
+                vsnew.append((x_min,vp2[1] + (vp1[1] - vp2[1]) * (x_min - vp2[0]) / (vp1[0] - vp2[0])))
+        vp1=vp2 #将当前点作为下次循环的前一点
+
+    # 对上边界进行操作
+    vsold = vsnew
+    vsnew = []
+
+    flag = 1
+    vp1 = vsold.pop(0)
+    if (vp1[1] >= y_min):
+        flag = 0
+    vsold.append(vp1)
+
+    for i in range(len(vsold)):
+        vp2 = vsold.pop(0)
+        if (vp2[1] >= y_min):
+            if flag != 0:
+                flag = 0
+                vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_min - vp2[1]) / (vp1[1] - vp2[1]), y_min))
+            vsnew.append(vp2)
+        else:
+            if flag == 0:
+                flag = 1
+                vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_min - vp2[1]) / (vp1[1] - vp2[1]), y_min))
+        vp1 = vp2
+
+    # 对右边界进行操作
+    vsold = vsnew
+    vsnew = []
+
+    flag = 1
+    vp1 = vsold.pop(0)
+    if (vp1[0] <= x_max):
+        flag = 0
+    vsold.append(vp1)
+
+    for i in range(len(vsold)):
+        vp2 = vsold.pop(0)
+        if (vp2[0] <= x_max):
+            if flag != 0:
+                flag = 0
+                vsnew.append((x_max, vp2[1] + (vp1[1] - vp2[1]) * (x_max - vp2[0]) / (vp1[0] - vp2[0])))
+            vsnew.append(vp2)
+        else:
+            if flag == 0:
+                flag = 1
+                vsnew.append((x_max, vp2[1] + (vp1[1] - vp2[1]) * (x_max - vp2[0]) / (vp1[0] - vp2[0])))
+        vp1 = vp2
+
+    # 对下边界进行操作
+    vsold = vsnew
+    vsnew = []
+
+    flag = 1
+    vp1 = vsold.pop(0)
+    if (vp1[1] <= y_max):
+        flag = 0
+    vsold.append(vp1)
+
+    for i in range(len(vsold)):
+        vp2 = vsold.pop(0)
+        if (vp2[1] <= y_max):
+            if flag != 0:
+                flag = 0
+                vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_max - vp2[1]) / (vp1[1] - vp2[1]), y_max))
+            vsnew.append(vp2)
+        else:
+            if flag == 0:
+                flag = 1
+                vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_max - vp2[1]) / (vp1[1] - vp2[1]), y_max))
+        vp1 = vp2
+    return vsnew

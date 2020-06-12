@@ -126,11 +126,11 @@ class MyCanvas(QGraphicsView):
         self.edit_data = []
         minPoint = min(self.temp_item.p_list)
         maxPoint = max(self.temp_item.p_list)
-        self.edit_p_list = self.item_dict[self.selected_id].p_list
+        self.edit_p_list = self.item_dict[self.selected_id].p_list.copy()
         if self.item_dict[self.selected_id].item_type == 'line':
             new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
         else:
-            new_p_list = alg.clip_polygon(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
+            new_p_list = alg.clip_polygon(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], 'Sutherland-Hodgeman')
         if len(new_p_list) > 0:
             self.item_dict[self.selected_id].p_list = new_p_list
             self.main_window.log_widget.do('edit', self.item_dict[self.selected_id], self.edit_p_list)
@@ -169,7 +169,7 @@ class MyCanvas(QGraphicsView):
         pos = self.mapToScene(event.localPos().toPoint())
         x = int(pos.x())
         y = int(pos.y())
-        self.main_window.status_label.setText('位置: (%d, %d) ' % (x, y))
+        self.main_window.status_label.setText('位置: (%d, %d) ' % (x, self.scene().height() - y - 1))
         if self.status == '':
             return
         if self.status == 'translate' and len(self.edit_data):
