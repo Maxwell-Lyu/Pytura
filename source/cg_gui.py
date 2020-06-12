@@ -555,7 +555,7 @@ class MainWindow(QMainWindow):
 
         # 使用QGraphicsView作为画布
         self.scene = QGraphicsScene(self)
-        self.scene.setSceneRect(0, 0, 600, 600)
+        self.scene.setSceneRect(0, 0, 650, 650)
         self.canvas_widget = MyCanvas(self.scene, self)
         self.canvas_widget.main_window = self
         self.canvas_widget.list_widget = self.list_widget
@@ -884,7 +884,7 @@ class MainWindow(QMainWindow):
                 f.write(buf)
 
     def save_action(self):
-        image = QImage(600, 600, QImage.Format_ARGB32_Premultiplied)
+        image = QImage(self.scene.width(), self.scene.height(), QImage.Format_ARGB32_Premultiplied)
         painter = QPainter(image)
         self.scene.render(painter, QRectF(image.rect()), self.scene.sceneRect())
         painter.end()
