@@ -153,6 +153,8 @@ class MyCanvas(QGraphicsView):
             return item
 
     def selection_changed(self, selectedItem: QListWidgetItem):
+        if self.status != '':
+            return
         selected = selectedItem.text()
         if self.selected_id != '':
             self.item_dict[self.selected_id].selected = False
