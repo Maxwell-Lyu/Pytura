@@ -316,6 +316,19 @@ class MyItem(QGraphicsItem):
                 return QIcon('asset/icon/curve_bezier.svg')
             elif self.algorithm == 'B-spline':
                 return QIcon('asset/icon/curve_b_spline.svg')
+    '''
+    def fill(self, painter: QPainter):
+        if self.item_type != 'polygon':
+            return
+        painter.setPen(QColor(21, 101, 192))
+        y_min = min(list(map(lambda p: p[1], self.p_list)))
+        y_max = max(list(map(lambda p: p[1], self.p_list)))
+        for y in range(y_min, y_max + 1):
+            joints = [p[0] for p in self.item_pixels if p[1] == y]
+            joints.sort()
+            for i in range(0, len(joints) - 1, 2):
+                painter.drawLine(joints[i], y, joints[i + 1], y)
+    '''
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: Optional[QWidget] = ...) -> None:
         if self.isDirty:
