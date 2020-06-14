@@ -41,7 +41,7 @@ def draw_line(p_list, algorithm):
             i = 0
             x, y = x0, y0
             while i <= length:
-                result.append((round(x), round(y)))
+                result.append((int(round(x)), int(round(y))))
                 x += dx
                 y += dy
                 i += 1
@@ -57,7 +57,7 @@ def draw_line(p_list, algorithm):
             dx, dy = dy, dx
         e = 2 * dy - dx
         for i in range(dx):
-            result.append((x, y))
+            result.append((int(x), int(y)))
             if e > 0:
                 if interchange:
                     x += s1
@@ -69,7 +69,7 @@ def draw_line(p_list, algorithm):
             else:
                 x = x + s1
             e = e + 2 * dy
-        result.append((x1, y1))
+        result.append((int(x1), int(y1)))
     return result
 
 
