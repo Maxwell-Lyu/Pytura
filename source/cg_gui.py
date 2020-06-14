@@ -347,7 +347,7 @@ class MyItem(QGraphicsItem):
 
         for p in self.item_pixels:
             painter.setPen(self.color)
-            painter.drawPoint(*p)
+            painter.drawPoint(p[0], p[1])
         if self.selected:
             painter.setPen(QColor(21, 101, 192))
             painter.drawRect(self.boundingRect())
