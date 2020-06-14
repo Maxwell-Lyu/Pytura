@@ -127,10 +127,10 @@ class MyCanvas(QGraphicsView):
         minPoint = min(self.temp_item.p_list)
         maxPoint = max(self.temp_item.p_list)
         self.edit_p_list = self.item_dict[self.selected_id].p_list.copy()
-        if self.item_dict[self.selected_id].item_type == 'line':
-            new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
-        else:
-            new_p_list = alg.clip_polygon(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], 'Sutherland-Hodgeman')
+        # if self.item_dict[self.selected_id].item_type == 'line':
+        new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
+        # else:
+            # new_p_list = alg.clip(self.item_dict[self.selected_id].p_list, minPoint[0], minPoint[1], maxPoint[0], maxPoint[1], self.temp_algorithm)
         if len(new_p_list) > 0:
             self.item_dict[self.selected_id].p_list = new_p_list
             self.main_window.log_widget.do('edit', self.item_dict[self.selected_id], self.edit_p_list)
