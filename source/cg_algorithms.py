@@ -356,135 +356,98 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
                         return [(round(x1), round(y1)), (round(x2), round(y2))]
         pass
     elif algorithm == 'Sutherland-Hodgeman':
-        return clip_sh(p_list, [[x_max, y_min], [x_max, y_max], [x_min, y_max], [x_min, y_min], ])
-        '''
-        vsold = p_list
-        vsnew = []
+        Pin = p_list
+        Pout = []
         # 对左边界进行操作
-        flag = 1 #前一个点S的内外标志，用变量flag来标识：0表示在内侧，1表示在外侧。
-        vp1 = vsold.pop(0)
-        if (vp1[0] >= x_min):
-            flag = 0
-        vsold.append(vp1)
+        visible = False #前一个点S的内外标志，用变量visible来标识：1表示在内侧，0表示在外侧。
+        S = Pin.pop(0)
+        if (S[0] >= x_min):
+            visible = True
+        Pin.append(S)
 
-        for i in range(len(vsold)):
+        for i in range(len(Pin)):
             # 对于左边界，判断第i个顶点是否在边界内
-            vp2 = vsold.pop(0)
+            P = Pin.pop(0)
             #当前第i个顶点在边界内侧
-            if (vp2[0] >= x_min):
-                if flag!=0: #前一个点在外侧
-                    flag = 0 #将标志置0,作为下一次循环的前一点标志
-                    vsnew.append((x_min,vp2[1] + (vp1[1] - vp2[1]) * (x_min - vp2[0]) / (vp1[0] - vp2[0])))
-                vsnew.append(vp2)
+            if (P[0] >= x_min):
+                if not visible: #前一个点在外侧
+                    Pout.append((x_min,P[1] + (S[1] - P[1]) * (x_min - P[0]) / (S[0] - P[0])))
+                Pout.append(P)
+                visible = True #将标志置0,作为下一次循环的前一点标志
             #当前第i个顶点在边界外侧
             else:
-                if flag == 0: #前一个点在内侧
-                    flag = 1 #将标志置0,作为下一次循环的前一点标志
-                    vsnew.append((x_min,vp2[1] + (vp1[1] - vp2[1]) * (x_min - vp2[0]) / (vp1[0] - vp2[0])))
-            vp1=vp2 #将当前点作为下次循环的前一点
+                if visible: #前一个点在内侧
+                    Pout.append((x_min,P[1] + (S[1] - P[1]) * (x_min - P[0]) / (S[0] - P[0])))
+                visible = False #将标志置0,作为下一次循环的前一点标志
+            S = P #将当前点作为下次循环的前一点
 
         # 对上边界进行操作
-        vsold = vsnew
-        vsnew = []
+        Pin = Pout
+        Pout = []
 
-        flag = 1
-        vp1 = vsold.pop(0)
-        if (vp1[1] >= y_min):
-            flag = 0
-        vsold.append(vp1)
+        visible = False
+        S = Pin.pop(0)
+        if (S[1] >= y_min):
+            visible = True
+        Pin.append(S)
 
-        for i in range(len(vsold)):
-            vp2 = vsold.pop(0)
-            if (vp2[1] >= y_min):
-                if flag != 0:
-                    flag = 0
-                    vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_min - vp2[1]) / (vp1[1] - vp2[1]), y_min))
-                vsnew.append(vp2)
+        for i in range(len(Pin)):
+            P = Pin.pop(0)
+            if (P[1] >= y_min):
+                if not visible:
+                    Pout.append((P[0] + (S[0] - P[0]) * (y_min - P[1]) / (S[1] - P[1]), y_min))
+                Pout.append(P)
+                visible = True
             else:
-                if flag == 0:
-                    flag = 1
-                    vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_min - vp2[1]) / (vp1[1] - vp2[1]), y_min))
-            vp1 = vp2
+                if visible:
+                    Pout.append((P[0] + (S[0] - P[0]) * (y_min - P[1]) / (S[1] - P[1]), y_min))
+                visible = False
+            S = P
 
         # 对右边界进行操作
-        vsold = vsnew
-        vsnew = []
+        Pin = Pout
+        Pout = []
 
-        flag = 1
-        vp1 = vsold.pop(0)
-        if (vp1[0] <= x_max):
-            flag = 0
-        vsold.append(vp1)
+        visible = False
+        S = Pin.pop(0)
+        if (S[0] <= x_max):
+            visible = True
+        Pin.append(S)
 
-        for i in range(len(vsold)):
-            vp2 = vsold.pop(0)
-            if (vp2[0] <= x_max):
-                if flag != 0:
-                    flag = 0
-                    vsnew.append((x_max, vp2[1] + (vp1[1] - vp2[1]) * (x_max - vp2[0]) / (vp1[0] - vp2[0])))
-                vsnew.append(vp2)
+        for i in range(len(Pin)):
+            P = Pin.pop(0)
+            if (P[0] <= x_max):
+                if not visible:
+                    Pout.append((x_max, P[1] + (S[1] - P[1]) * (x_max - P[0]) / (S[0] - P[0])))
+                Pout.append(P)
+                visible = True
             else:
-                if flag == 0:
-                    flag = 1
-                    vsnew.append((x_max, vp2[1] + (vp1[1] - vp2[1]) * (x_max - vp2[0]) / (vp1[0] - vp2[0])))
-            vp1 = vp2
+                if visible:
+                    Pout.append((x_max, P[1] + (S[1] - P[1]) * (x_max - P[0]) / (S[0] - P[0])))
+                visible = False
+            S = P
 
         # 对下边界进行操作
-        vsold = vsnew
-        vsnew = []
+        Pin = Pout
+        Pout = []
 
-        flag = 1
-        vp1 = vsold.pop(0)
-        if (vp1[1] <= y_max):
-            flag = 0
-        vsold.append(vp1)
+        visible = False
+        S = Pin.pop(0)
+        if (S[1] <= y_max):
+            visible = True
+        Pin.append(S)
 
-        for i in range(len(vsold)):
-            vp2 = vsold.pop(0)
-            if (vp2[1] <= y_max):
-                if flag != 0:
-                    flag = 0
-                    vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_max - vp2[1]) / (vp1[1] - vp2[1]), y_max))
-                vsnew.append(vp2)
+        for i in range(len(Pin)):
+            P = Pin.pop(0)
+            if (P[1] <= y_max):
+                if not visible:
+                    Pout.append((P[0] + (S[0] - P[0]) * (y_max - P[1]) / (S[1] - P[1]), y_max))
+                Pout.append(P)
+                visible = True
             else:
-                if flag == 0:
-                    flag = 1
-                    vsnew.append((vp2[0] + (vp1[0] - vp2[0]) * (y_max - vp2[1]) / (vp1[1] - vp2[1]), y_max))
-            vp1 = vp2
-        return vsnew
-        '''
+                if visible:
+                    Pout.append((P[0] + (S[0] - P[0]) * (y_max - P[1]) / (S[1] - P[1]), y_max))
+                visible = False
+            S = P
+        return Pout
     return []
-    
-
-def clip_sh(subjectPolygon, clipPolygon):
-   def inside(p):
-      return(cp2[0]-cp1[0])*(p[1]-cp1[1]) >= (cp2[1]-cp1[1])*(p[0]-cp1[0])
- 
-   def computeIntersection():
-      dc = [ cp1[0] - cp2[0], cp1[1] - cp2[1] ]
-      dp = [ s[0] - e[0], s[1] - e[1] ]
-      n1 = cp1[0] * cp2[1] - cp1[1] * cp2[0]
-      n2 = s[0] * e[1] - s[1] * e[0] 
-      n3 = 1.0 / (dc[0] * dp[1] - dc[1] * dp[0])
-      return [(n1*dp[0] - n2*dc[0]) * n3, (n1*dp[1] - n2*dc[1]) * n3]
- 
-   outputList = subjectPolygon
-   cp1 = clipPolygon[-1]
- 
-   for clipVertex in clipPolygon:
-      cp2 = clipVertex
-      inputList = outputList
-      outputList = []
-      s = inputList[-1]
- 
-      for subjectVertex in inputList:
-         e = subjectVertex
-         if inside(e):
-            if not inside(s):
-               outputList.append(computeIntersection())
-            outputList.append(e)
-         elif inside(s):
-            outputList.append(computeIntersection())
-         s = e
-      cp1 = cp2
-   return(outputList)
