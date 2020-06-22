@@ -78,10 +78,12 @@
     \item cg\_cli.py: 完成全部功能
     \item cg\_gui.py: 完成全部必要功能, 可选功能持续添加中, 已经添加的额外功能
     \begin{itemize}
+      \item [功能]多边形裁剪: Sutherland-Hodgeman算法
       \item [功能]将画布导出为PNG图片
       \item [功能]将画布导出为绘图命令, 兼容cg\_cli
       \item [功能]单行输入, 用cg\_cli命令绘图, 或将选中图元解析为命令
       \item [功能]操作历史记录, 撤销和重做
+      \item [功能]图元复制/粘贴
       \item [功能]控件选取颜色
       \item [交互]点击图元进行选中
       \item [交互]退出, 重置画布并选择新画布大小
@@ -649,6 +651,67 @@
                         return [(round(x1), round(y1)), (round(x2), round(y2))]\end{lstlisting}
   \end{enumerate}
   \item 我的理解: 该算法的思路是, 用线段所在直线与窗口, 计算线段在该窗口下的参数$t$区间, 各个边界算得到的区间求交集. 这一方法使得算法在每个边界至多进行一次求交点运算(实际上是除法运算), 效率较高
+\end{itemize}
+\subsection{Sutherland-Hodgeman算法裁剪多边形}
+\begin{itemize}
+  \item 算法介绍\\
+  Sutherland-Hodgeman算法\cite{rog_2002}, 其基本思想是, 多边形对一条边或一个面的裁剪容易实现, 故用窗口的边, 一条一条地对原多边形和中间结果多边形进行裁剪.\\
+  取多边形顶点列表中的一点P作为一边的终点, 列表中位于P之前的一点S为起始点, 每次将多边形的边与裁剪面比较之后, 向裁剪后的多边形顶点输出列表输出1到2个顶点, 或者输出顶点.\\
+  边与裁剪面的位置关系有如下4种, 分别对应不同的输出点\begin{itemize}
+    \item 全部可见: 输出点P
+    \item 完全不可见: 不输出任何点
+    \item 离开可见: 输出边与裁剪面的交点I
+    \item 进入可见: 输出点P, 输出边与裁剪面的交点I
+  \end{itemize}
+  对于多边形的第一个顶点, 只需判断其是否可见, 若可见, 则输出并作为S. 若不可见, 只需保存为S, 无需输出\\
+  最后一边需要分开处理, 做法是将第一个顶点保存为F, 这样最后一边可以与其他边一样统一处理
+  \item 算法流程与代码\begin{enumerate}
+    \item 算法对4个边的处理大致相同. 由于我始终是按照矩形窗口裁剪, 因此可以对算法进行大幅度的简化, 尤其是位置关系判断和求交点, 不需要再定义额外的过程
+    \item 由于4个边界的裁剪类似, 这里举例上边界
+    \begin{lstlisting}[language={Python}] 
+# 对上边界进行操作
+Pin = Pout
+Pout = []
+visible = False
+
+S = Pin.pop(0)
+if (S[1] >= y_min):
+    visible = True
+Pin.append(S)
+
+for i in range(len(Pin)):
+    P = Pin.pop(0)
+    if (P[1] >= y_min):
+        if not visible:
+            Pout.append((P[0] + (S[0] - P[0]) * (y_min - P[1]) / (S[1] - P[1]), y_min))
+        Pout.append(P)
+        visible = True
+    else:
+        if visible:
+            Pout.append((P[0] + (S[0] - P[0]) * (y_min - P[1]) / (S[1] - P[1]), y_min))
+        visible = False
+    S = P
+\end{lstlisting}\begin{enumerate}
+      \item 首先更新裁剪前后的临时多边形列表, 将上一次裁剪的结果(第一次裁剪时, 该结果为原多边形)放入Pin, 新列表Pout为空
+      \item 设置S, 并计算S是否可见, 以设置visible
+      \item 将S复制一份, 到输入列表的末尾, 以完成最后一边的裁剪
+      \item 进入逐边裁剪循环\begin{enumerate}
+        \item 取边的终点P, 判断P是否可见, 以确认位置关系为4种中的哪一个
+        \item 若P可见, 且S不可见, 情况4, 输出点I, 输出点P
+        \item 若P可见, 且S可见, 情况1, 输出点P
+        \item 若P不可见, 且S可见, 情况3, 输出点I
+        \item 若P不可见, 且S不可见, 情况2, 不输出
+        \item 设置P的可见性为新的visible, 并将S赋值为P
+      \end{enumerate}
+    \end{enumerate}
+  \end{enumerate}
+  \item 我的理解: \begin{itemize}
+    \item 该算法的核心步骤有2点\begin{itemize}
+      \item 判断可见性: 根据端点的可见性, 决定裁剪后需要生成的点
+      \item 求交点: 必要时, 生成新的点
+    \end{itemize}
+    \item 算法的中心思想, 就是逐边, 逐裁剪面处理, 本身的难度比较低
+\end{itemize}
 \end{itemize}
 
 \section{系统介绍: CLI}
