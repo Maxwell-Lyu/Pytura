@@ -457,5 +457,5 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
                     Pout.append((P[0] + (S[0] - P[0]) * (y_max - P[1]) / (S[1] - P[1]), y_max))
                 visible = False
             S = P
-        return Pout
+        return list(map(lambda p: (round(p[0]), round(p[1])), Pout))
     return []
