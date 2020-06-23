@@ -357,6 +357,8 @@ class MyItem(QGraphicsItem):
                 self.drawControlPolygon(painter)
 
     def boundingRect(self) -> QRectF:
+        if not len(self.p_list):
+            return QRectF()
         if self.item_type == 'line' or self.item_type == 'ellipse':
             x0, y0 = self.p_list[0]
             x1, y1 = self.p_list[1]

@@ -357,6 +357,8 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
         pass
     elif algorithm == 'Sutherland-Hodgeman':
         Pin = p_list
+        if not len(Pin):
+            return []
         Pout = []
         # 对左边界进行操作
         visible = False #前一个点S的内外标志，用变量visible来标识：1表示在内侧，0表示在外侧。
@@ -383,6 +385,8 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
 
         # 对上边界进行操作
         Pin = Pout
+        if not len(Pin):
+            return []
         Pout = []
 
         visible = False
@@ -406,6 +410,8 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
 
         # 对右边界进行操作
         Pin = Pout
+        if not len(Pin):
+            return []
         Pout = []
 
         visible = False
@@ -429,6 +435,8 @@ def clip(p_list, x_min, y_min, x_max, y_max, algorithm):
 
         # 对下边界进行操作
         Pin = Pout
+        if not len(Pin):
+            return []
         Pout = []
 
         visible = False
