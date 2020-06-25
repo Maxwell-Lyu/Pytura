@@ -865,12 +865,12 @@ class MainWindow(QMainWindow):
     def copy_action(self):
         if self.canvas_widget.selected_id != '':
             item = self.canvas_widget.item_dict[self.canvas_widget.selected_id]
-            self.copied_item = MyItem(item.id, item.item_type, [_p.copy() for _p in item.p_list], item.algorithm, item.color)
+            self.copied_item = MyItem(item.id, item.item_type, item.p_list.copy(), item.algorithm, item.color)
             self.updateUI(new = self.canvas_widget.status)
     def paste_action(self):
         if self.copied_item:
             item = self.copied_item
-            item = MyItem(self.get_id(), item.item_type, [_p.copy() for _p in item.p_list], item.algorithm, item.color)
+            item = MyItem(self.get_id(), item.item_type, item.p_list.copy(), item.algorithm, item.color)
             item.isTemp = False
             item.isDirty = True
             item.selected = False
