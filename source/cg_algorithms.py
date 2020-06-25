@@ -48,8 +48,8 @@ def draw_line(p_list, algorithm):
     elif algorithm == 'Bresenham':
         x = x0
         y = y0
-        dx = abs(x1 - x0)
-        dy = abs(y1 - y0)
+        dx = int(abs(x1 - x0))
+        dy = int(abs(y1 - y0))
         s1 = sign(x1 - x0)
         s2 = sign(y1 - y0)
         interchange = (dy > dx)
