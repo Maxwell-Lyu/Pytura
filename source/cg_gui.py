@@ -680,6 +680,7 @@ class MainWindow(QMainWindow):
         self.scale_btn						.setCheckable(True)
         self.clip_cohen_sutherland_btn      .setCheckable(True)
         self.clip_liang_barsky_btn          .setCheckable(True)
+        self.clip_sutherland_hodgeman_btn   .setCheckable(True)
 
 
         self.undo_btn.setStyleSheet(self.styleSheet)
@@ -1163,44 +1164,61 @@ class MainWindow(QMainWindow):
         if new == '':
             message = '空闲'
             self.mouse_btn                 .setChecked(True)
+            self.mouse_btn                 .setDisabled(False)
         elif new == 'line':
             message = algorithm + '算法绘制线段'
             if algorithm == 'Naive':
                 self.line_naive_btn                 .setChecked(True)
+                self.line_naive_btn                 .setDisabled(False)
             elif algorithm == 'DDA':
                 self.line_dda_btn                   .setChecked(True)
+                self.line_dda_btn                   .setDisabled(False)
             elif algorithm == 'Bresenham':
                 self.line_bresenham_btn             .setChecked(True)
+                self.line_bresenham_btn             .setDisabled(False)
         elif new == 'polygon':
             message = algorithm + '算法绘制多边形'
             if algorithm == 'DDA':
                 self.polygon_dda_btn                   .setChecked(True)
+                self.polygon_dda_btn                   .setDisabled(False)
             elif algorithm == 'Bresenham':
                 self.polygon_bresenham_btn             .setChecked(True)
+                self.polygon_bresenham_btn             .setDisabled(False)
         elif new == 'ellipse':
             message = '中点圆算法绘制椭圆'
             self.ellipse_btn					.setChecked(True)
+            self.ellipse_btn					.setDisabled(False)
         elif new == 'curve':
             message = algorithm + '算法绘制曲线'
             if algorithm == 'Bezier':
                 self.curve_bezier_btn				.setChecked(True)
+                self.curve_bezier_btn				.setDisabled(False)
             elif algorithm == 'B-spline':
                 self.curve_b_spline_btn				.setChecked(True)
+                self.curve_b_spline_btn				.setDisabled(False)
         elif new == 'translate':
             message = '平移'
             self.translate_btn					.setChecked(True)
+            self.translate_btn					.setDisabled(False)
         elif new == 'rotate':
             message = '旋转'
             self.rotate_btn						.setChecked(True)
+            self.rotate_btn						.setDisabled(False)
         elif new == 'scale':
             message = '缩放'
             self.scale_btn						.setChecked(True)
+            self.scale_btn						.setDisabled(False)
         elif new == 'clip':
-            message = algorithm + '算法裁剪线段'
+            message = algorithm + '算法裁剪'
             if algorithm == 'Cohen-Sutherland':
                 self.clip_cohen_sutherland_btn      .setChecked(True)
+                self.clip_cohen_sutherland_btn      .setDisabled(False)
             elif algorithm == 'Liang-Barsky':
                 self.clip_liang_barsky_btn          .setChecked(True)
+                self.clip_liang_barsky_btn          .setDisabled(False)
+            elif algorithm == 'Sutherland-Hodgeman':
+                self.clip_sutherland_hodgeman_btn          .setChecked(True)
+                self.clip_sutherland_hodgeman_btn          .setDisabled(False)
         self.statusBar().showMessage(message)
         # self.status_label.setText(message)
 
