@@ -101,7 +101,7 @@ if __name__ == '__main__':
                 y0 = int(line[3])
                 x1 = int(line[4])
                 y1 = int(line[5])
-                x0, y0, x1, x1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
+                x0, y0, x1, y1 = min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1)
                 algorithm = line[6]
                 item_dict[item_id][1] = alg.clip(item_dict[item_id][1], x0, y0, x1, y1, algorithm)
                 # if item_dict[item_id][1].__len__() == 0:
